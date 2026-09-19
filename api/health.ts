@@ -12,6 +12,14 @@ import { requireMethod } from './_lib/http.js';
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!requireMethod(req, res, 'GET')) return;
 
+  // Which build is actually serving? Vercel injects these at build time.
+  const build = {
+    commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
+    message: process.env.VERCEL_GIT_COMMIT_MESSAGE?.split('\n')[0] ?? null,
+    environment: process.env.VERCEL_ENV ?? null,
+    region: process.env.VERCEL_REGION ?? null,
+  };
+
   const env = {
     redis: !!(process.env.REDIS_URL || process.env.KV_URL),
     blob: !!process.env.BLOB_READ_WRITE_TOKEN,
@@ -43,5 +51,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const ok = env.redis && env.blob && store.ok;
-  res.status(ok ? 200 : 503).json({ ok, day: currentDay(), env, seen, store });
+  res.status(ok ? 200 : 503).json({ ok, build, day: currentDay(), env, seen, store });
 }
