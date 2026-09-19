@@ -81,7 +81,7 @@ async function padlet(base, path, init = {}) {
   return text ? JSON.parse(text) : {};
 }
 
-console.log(c.bold('\n🪔 Jyoti — Padlet attachment round-trip\n'));
+console.log(c.bold('\n💧 Jyoti — Padlet attachment round-trip\n'));
 await loadDotEnv();
 
 const boardId = process.env.PADLET_BOARD_ID;

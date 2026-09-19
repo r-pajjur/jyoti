@@ -46,13 +46,13 @@ function post(subject, body, url, createdAt) {
 
 // A board mid-ritual: two days behind you, and today already has other lamps lit.
 const posts = [
-  post('🪔 Day 1 · Prompt', 'What did you carry home?', null, DAY(1)),
+  post('💧 Day 1 · Prompt', 'What did you carry home?', null, DAY(1)),
   post('Lakshmi · Day 1', 'I carried back the quiet of the river at dawn.', null, DAY(1)),
   post('Meera Nair · Day 1', 'A stillness I did not have before.', null, DAY(1)),
-  post('🪔 Day 2 · Prompt', 'Your altar corner.', null, DAY(2)),
+  post('💧 Day 2 · Prompt', 'Your altar corner.', null, DAY(2)),
   post('Anjali · Day 2', 'My small corner, swept and lit.', null, DAY(2)),
   post('Lakshmi · Day 2', 'Marigolds from the balcony today.', null, DAY(2)),
-  post('🪔 Day 3 · Prompt', 'Something near you that brought peace.', null, DAY(3)),
+  post('💧 Day 3 · Prompt', 'Something near you that brought peace.', null, DAY(3)),
   post('Anjali · Day 3', 'The light through the kitchen window at 6am.', null, DAY(3)),
   post('Meera Nair · Day 3', 'My mother on the phone, laughing.', null, DAY(3)),
 ];
@@ -179,7 +179,7 @@ const lan = Object.values(networkInterfaces())
   .find((i) => i && i.family === 'IPv4' && !i.internal)?.address;
 
 server.listen(PORT, () => {
-  console.log(`\n🪔 Jyoti demo — Day 3 of 30, fake Padlet board, no keys needed`);
+  console.log(`\n💧 Jyoti demo — Day 3 of 30, fake Padlet board, no keys needed`);
   console.log(`   laptop  http://localhost:${PORT}`);
   if (lan) console.log(`   phone   http://${lan}:${PORT}   (screens only — install needs https)`);
   console.log(`\n   Seeded: 2 past days, and 2 other people have already posted today.`);

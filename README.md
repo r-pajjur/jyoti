@@ -1,4 +1,4 @@
-# Jyoti 🪔
+# Jyoti 💧
 
 A 30-day post-yatra ritual PWA. One gentle prompt each morning; posting a photo
 or a reflection unlocks that day's shared feed. Built for ~25 non-technical

@@ -56,7 +56,7 @@ export interface JyotiPost {
   webUrl: string | null;
 }
 
-const PROMPT_MARK = '🪔';
+const PROMPT_MARK = '💧';
 
 /** Subject conventions — the only way to attribute posts, since the API key owner
  *  is the author of every API-created post. */

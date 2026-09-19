@@ -28,7 +28,7 @@ process.env.JYOTI_START_DATE = start.toISOString().slice(0, 10);
 const board = {
   data: { id: 'test-board', type: 'board', attributes: { title: 'Jyoti test' } },
   included: [
-    post('p1', '🪔 Day 3 · Prompt', 'the prompt', null),
+    post('p1', '💧 Day 3 · Prompt', 'the prompt', null),
     post('p2', 'Lakshmi · Day 3', 'a still morning', 'https://blob.example/1.jpg'),
     post('p3', 'Meera Nair · Day 3', 'grateful', null),
     post('p4', 'Lakshmi · Day 1', 'came home', null),

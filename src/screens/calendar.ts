@@ -84,7 +84,7 @@ export async function calendarScreen(): Promise<HTMLElement> {
       detail.innerHTML = `
         <div class="day-head">
           <h3>Day ${entry.day} · ${esc(entry.prompt?.title ?? '')}</h3>
-          <span class="muted">${entry.posts.length} 🪔</span>
+          <span class="muted">${entry.posts.length} 💧</span>
         </div>
         <p class="muted small">${esc(entry.prompt?.text ?? '')}</p>
         ${
