@@ -8,7 +8,7 @@ users on iPhone Safari.
 
 - **Frontend** — plain TypeScript bundled by esbuild into `public/app.js`. No framework.
 - **Backend** — Vercel serverless functions in `api/`.
-- **Store** — Vercel KV (Upstash Redis). Two hashes: posts, and blessing counts.
+- **Store** — any Redis, over a standard `REDIS_URL`. Two hashes: posts, and blessing counts.
 - **Photos** — Vercel Blob. The database holds only the resulting URL.
 - **Look** — sandalwood and saffron, matching lifeseva.ca (Fraunces + Inter).
 
@@ -55,8 +55,9 @@ npm run build
 ```
 
 In the Vercel dashboard, under **Storage**, connect two things to the project:
-a **KV** store and a **Blob** store. Both inject their own credentials — there
-are no API keys to copy by hand.
+a **Redis** database (any Marketplace provider) and a **Blob** store. Both
+inject their own credentials — there are no API keys to copy by hand. A new
+deployment is required before injected variables take effect.
 
 ## When something is wrong on the deployment
 
@@ -64,7 +65,7 @@ are no API keys to copy by hand.
 whether the store answers, without revealing any value:
 
 ```json
-{ "ok": false, "env": { "kv": false, "blob": true }, "store": { "ok": false, "error": "…" } }
+{ "ok": false, "env": { "redis": false, "blob": true }, "store": { "ok": false, "error": "…" } }
 ```
 
 A 404 from that route means the serverless functions were not deployed at all,

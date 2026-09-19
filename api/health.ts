@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { currentDay, GROUP_SIZE, TOTAL_DAYS } from './_lib/day';
-import { allPosts } from './_lib/store';
+import { allPosts, pingStore } from './_lib/store';
 import { requireMethod } from './_lib/http';
 
 /**
@@ -13,8 +13,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!requireMethod(req, res, 'GET')) return;
 
   const env = {
-    kv: !!(process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL),
-    kvToken: !!(process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN),
+    redis: !!(process.env.REDIS_URL || process.env.KV_URL),
     blob: !!process.env.BLOB_READ_WRITE_TOKEN,
     startDate: process.env.JYOTI_START_DATE ?? null,
     timezone: process.env.JYOTI_TIMEZONE ?? null,
@@ -27,13 +26,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .filter((key) => /^(KV_|UPSTASH_|REDIS|BLOB_)/.test(key))
     .sort();
 
-  let store: { ok: boolean; posts?: number; error?: string };
+  let store: { ok: boolean; ping?: string; posts?: number; error?: string };
   try {
-    store = { ok: true, posts: (await allPosts()).length };
+    store = { ok: true, ping: await pingStore(), posts: (await allPosts()).length };
   } catch (error) {
     store = { ok: false, error: error instanceof Error ? error.message : 'unknown' };
   }
 
-  const ok = env.kv && env.kvToken && env.blob && store.ok;
+  const ok = env.redis && env.blob && store.ok;
   res.status(ok ? 200 : 503).json({ ok, day: currentDay(), env, seen, store });
 }

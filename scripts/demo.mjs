@@ -19,8 +19,7 @@ import { writeDemoStubs } from './lib/stubs.mjs';
 
 const PORT = Number(process.env.PORT || 4000);
 
-process.env.KV_REST_API_URL = 'https://stub.invalid';
-process.env.KV_REST_API_TOKEN = 'stub';
+process.env.REDIS_URL = 'redis://stub.invalid:6379';
 process.env.JYOTI_TIMEZONE = 'UTC';
 process.env.JYOTI_TOTAL_DAYS = '30';
 process.env.JYOTI_SEND_HOUR = '8';
