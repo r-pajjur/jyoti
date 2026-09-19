@@ -12,7 +12,7 @@ function read<T>(key: string, fallback: T): T {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;
   } catch {
-    return fallback;
+    return fallback; 
   }
 }
 
