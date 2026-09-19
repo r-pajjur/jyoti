@@ -12,7 +12,7 @@
  * or a local server — from one REDIS_URL.
  */
 
-import { createClient, type RedisClientType } from 'redis';
+import type { RedisClientType } from 'redis';
 
 const POSTS = 'jyoti:posts';
 const BLESSINGS = 'jyoti:blessings';
@@ -74,6 +74,10 @@ async function redis(): Promise<RedisClientType> {
   }
 
   if (!client) {
+    // Imported here rather than at module scope: a module-level import that
+    // fails takes the whole function down with Vercel's generic "A server
+    // error has occurred", while this surfaces as a readable message.
+    const { createClient } = await import('redis');
     client = createClient({
       url,
       socket: {

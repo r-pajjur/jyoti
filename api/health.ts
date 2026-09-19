@@ -24,9 +24,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Names only, never values: which storage variables does this deployment see?
   const seen = storageVarNames();
 
+  // The env report must survive a store that hangs, so the probe is raced
+  // against a deadline shorter than the function's own timeout.
+  const deadline = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+    Promise.race([
+      promise,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`timed out after ${ms}ms`)), ms).unref?.(),
+      ),
+    ]);
+
   let store: { ok: boolean; ping?: string; posts?: number; error?: string };
   try {
-    store = { ok: true, ping: await pingStore(), posts: (await allPosts()).length };
+    const ping = await deadline(pingStore(), 6000);
+    store = { ok: true, ping, posts: (await deadline(allPosts(), 6000)).length };
   } catch (error) {
     store = { ok: false, error: error instanceof Error ? error.message : 'unknown' };
   }
