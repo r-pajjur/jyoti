@@ -32,6 +32,33 @@ export async function feedScreen(): Promise<HTMLElement> {
   try {
     const feed = await fetchFeed();
 
+    // Before Day 1, or after Day 30, there is nothing to add — so don't offer
+    // a button that silently bounces off the capture screen.
+    if (!feed.active) {
+      const waiting = feed.phase === 'before';
+      const when = feed.startDate
+        ? new Date(`${feed.startDate}T00:00:00`).toLocaleDateString(undefined, {
+            weekday: 'long', month: 'long', day: 'numeric',
+          })
+        : null;
+      mountInto(
+        host,
+        el(`
+          <div class="locked card">
+            <div class="drop drop-unlit"></div>
+            <h2>${waiting ? 'Not yet' : 'The river has run'}</h2>
+            <p class="muted">${
+              waiting
+                ? `We begin${when ? ` on ${esc(when)}` : ' soon'}. A prompt will be waiting for you that morning.`
+                : 'Thirty mornings, all of them gathered. Thank you for every drop.'
+            }</p>
+            ${waiting ? '' : '<a class="btn btn-quiet" href="#/calendar">See the whole river</a>'}
+          </div>
+        `),
+      );
+      return host;
+    }
+
     // Before you post: no prompt, no posts — only how many have gone before you.
     if (feed.locked) {
       const dots = Array.from(

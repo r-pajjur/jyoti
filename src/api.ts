@@ -31,6 +31,9 @@ export interface TodayResponse {
 export interface FeedResponse {
   day: number;
   locked: boolean;
+  active: boolean;
+  phase: 'before' | 'during' | 'after';
+  startDate?: string;
   count: number;
   groupSize: number;
   prompt: Prompt | null;

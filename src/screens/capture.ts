@@ -19,7 +19,8 @@ export async function captureScreen(): Promise<HTMLElement> {
     return host;
   }
   if (!today.active) {
-    go('/feed');
+    // Nothing to capture outside the thirty days; the feed explains why.
+    go('/feed', { reload: true });
     return host;
   }
 

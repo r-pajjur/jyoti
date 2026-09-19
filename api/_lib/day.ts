@@ -48,6 +48,10 @@ export function dateKeyForDay(day: number): string {
   return new Date(ms).toISOString().slice(0, 10);
 }
 
+export function startDateKey(): string {
+  return START_DATE;
+}
+
 export function isWithinRitual(day: number): boolean {
   return day >= 1 && day <= TOTAL_DAYS;
 }

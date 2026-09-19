@@ -150,6 +150,24 @@ try {
     assert.equal(archive.payload.totalDays, 30);
   });
 
+  /* Before Day 1 the feed must say so, and offer nothing to post. */
+  {
+    const realStart = process.env.JYOTI_START_DATE;
+    process.env.JYOTI_START_DATE = new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10);
+    const early = await call(
+      (await import(join(dir, `feed.mjs?before=${Date.now()}`))).default,
+      { name: 'Priya' },
+    );
+    check('before Day 1 the feed reports the wait instead of a locked day', () => {
+      assert.equal(early.payload.active, false);
+      assert.equal(early.payload.phase, 'before');
+      assert.ok(early.payload.startDate);
+      assert.equal(early.payload.count, 0);
+      assert.deepEqual(early.payload.posts, []);
+    });
+    process.env.JYOTI_START_DATE = realStart;
+  }
+
   const missing = await call(feedHandler, {});
   check('a request without a name is rejected', () => assert.equal(missing.statusCode, 400));
 
