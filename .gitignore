@@ -1,0 +1,7 @@
+node_modules
+.vercel
+.env
+.env*.local
+public/app.js
+public/app.js.map
+public/sw.js
