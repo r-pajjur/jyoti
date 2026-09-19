@@ -39,8 +39,15 @@ export async function calendarScreen(): Promise<HTMLElement> {
   try {
     const archive = await fetchArchive();
     const name = getProfile()?.name ?? 'you';
-    // The API hands back newest-first; the calendar reads naturally ascending.
-    const days = [...archive.days].sort((a, b) => a.day - b.day);
+    // The API only returns days that have happened. The grid is the whole month,
+    // so pad the future out with empty squares — the shape of what is still to come.
+    const known = new Map(archive.days.map((entry) => [entry.day, entry]));
+    const days: ArchiveDay[] = Array.from({ length: archive.totalDays }, (_, index) => {
+      const day = index + 1;
+      return (
+        known.get(day) ?? { day, dateKey: '', prompt: null, count: 0, locked: false, posts: [] }
+      );
+    });
     let mineOnly = false;
     let selected = archive.today;
 
