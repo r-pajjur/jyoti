@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { addBlessing } from './_lib/store';
-import { fail, handleError, requireMethod } from './_lib/http';
+import { addBlessing } from './_lib/store.js';
+import { fail, handleError, requireMethod } from './_lib/http.js';
 
 /** POST /api/react { postId } — a blessing. The count is kept but never shown. */
 export default async function handler(req: VercelRequest, res: VercelResponse) {

@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { currentDay, GROUP_SIZE } from './_lib/day';
-import { postsForDay } from './_lib/store';
-import { promptForDay } from './_lib/prompts';
-import { fail, handleError, normalizeName, readName, requireMethod } from './_lib/http';
+import { currentDay, GROUP_SIZE } from './_lib/day.js';
+import { postsForDay } from './_lib/store.js';
+import { promptForDay } from './_lib/prompts.js';
+import { fail, handleError, normalizeName, readName, requireMethod } from './_lib/http.js';
 
 /**
  * GET /api/feed?name=…&day=12

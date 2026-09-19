@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { get } from '@vercel/blob';
-import { fail, requireMethod } from './_lib/http';
+import { fail, requireMethod } from './_lib/http.js';
 
 /**
  * GET /api/photo?p=<pathname> — streams one photo out of a private Blob store.

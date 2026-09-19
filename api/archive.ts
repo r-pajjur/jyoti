@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { currentDay, dateKeyForDay, TOTAL_DAYS } from './_lib/day';
-import { allPosts } from './_lib/store';
-import { promptForDay } from './_lib/prompts';
-import { fail, handleError, normalizeName, readName, requireMethod } from './_lib/http';
+import { currentDay, dateKeyForDay, TOTAL_DAYS } from './_lib/day.js';
+import { allPosts } from './_lib/store.js';
+import { promptForDay } from './_lib/prompts.js';
+import { fail, handleError, normalizeName, readName, requireMethod } from './_lib/http.js';
 
 /**
  * GET /api/archive?name=…

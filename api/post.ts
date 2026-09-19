@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { randomUUID } from 'node:crypto';
-import { currentDay, TOTAL_DAYS } from './_lib/day';
-import { decodePhoto, uploadPhoto } from './_lib/photos';
-import { savePost } from './_lib/store';
-import { fail, handleError, normalizeName, readName, requireMethod } from './_lib/http';
+import { currentDay, TOTAL_DAYS } from './_lib/day.js';
+import { decodePhoto, uploadPhoto } from './_lib/photos.js';
+import { savePost } from './_lib/store.js';
+import { fail, handleError, normalizeName, readName, requireMethod } from './_lib/http.js';
 
 interface PostBody {
   name?: string;

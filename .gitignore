@@ -6,3 +6,4 @@ public/app.js
 public/app.js.map
 public/sw.js
 .jyoti-wire-*
+.esmcheck

@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { currentDay, isWithinRitual, ritualConfig, todayKey, TOTAL_DAYS } from './_lib/day';
-import { promptForDay } from './_lib/prompts';
-import { handleError, requireMethod } from './_lib/http';
+import { currentDay, isWithinRitual, ritualConfig, todayKey, TOTAL_DAYS } from './_lib/day.js';
+import { promptForDay } from './_lib/prompts.js';
+import { handleError, requireMethod } from './_lib/http.js';
 
 /** GET /api/today → the day number, its prompt, and the ritual window. */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
