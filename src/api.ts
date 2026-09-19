@@ -54,6 +54,25 @@ export interface ArchiveResponse {
 
 export class ApiError extends Error {}
 
+/**
+ * Pull a human message out of whatever came back. Our own handlers send
+ * { error: "text" }, but a function that fails to boot never reaches them and
+ * Vercel answers with its own { error: { code, message } } instead — which is
+ * why this must not assume a string.
+ */
+function errorMessage(payload: unknown, status: number): string {
+  const error = (payload as { error?: unknown } | null)?.error;
+  if (typeof error === 'string' && error.trim()) return error;
+  if (error && typeof error === 'object') {
+    const nested = error as { message?: unknown; code?: unknown };
+    if (typeof nested.message === 'string' && nested.message.trim()) return nested.message;
+    if (typeof nested.code === 'string' && nested.code.trim()) return `${nested.code} (${status})`;
+  }
+  const message = (payload as { message?: unknown } | null)?.message;
+  if (typeof message === 'string' && message.trim()) return message;
+  return `Something went wrong (${status}).`;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
@@ -64,16 +83,24 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   } catch {
     throw new ApiError('No connection. This will work again once you are back online.');
   }
-  const payload = await response.json().catch(() => ({}) as Record<string, unknown>);
-  if (!response.ok) {
-    throw new ApiError((payload as { error?: string }).error || `Something went wrong (${response.status}).`);
+
+  // A crashed or missing function can answer with an HTML error page, so the
+  // body is read as text first and only then tried as JSON.
+  const raw = await response.text().catch(() => '');
+  let payload: unknown = {};
+  try {
+    payload = raw ? JSON.parse(raw) : {};
+  } catch {
+    payload = {};
   }
+
+  if (!response.ok) throw new ApiError(errorMessage(payload, response.status));
   return payload as T;
 }
 
 function requireName(): string {
   const name = getProfile()?.name;
-  if (!name) throw new ApiError('We lost your name — please add it again in Settings.');
+  if (!name) throw new ApiError('We lost your name. Please reopen Jyoti and enter it again.');
   return name;
 }
 
@@ -102,13 +129,3 @@ export function bless(postId: string): Promise<{ ok: true }> {
   return request<{ ok: true }>('/api/react', { method: 'POST', body: JSON.stringify({ postId }) });
 }
 
-export function sendSubscription(subscription: PushSubscription): Promise<{ ok: true; id: string }> {
-  return request<{ ok: true; id: string }>('/api/subscribe', {
-    method: 'POST',
-    body: JSON.stringify({ name: requireName(), subscription: subscription.toJSON() }),
-  });
-}
-
-export function dropSubscription(endpoint: string): Promise<{ ok: true }> {
-  return request<{ ok: true }>('/api/unsubscribe', { method: 'POST', body: JSON.stringify({ endpoint }) });
-}

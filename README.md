@@ -50,13 +50,25 @@ gate is visible immediately.
 cp .env.example .env          # set JYOTI_START_DATE and JYOTI_GROUP_SIZE
 vercel link                   # connect the project
 vercel env pull .env          # pulls KV and Blob credentials once both are connected
-npm test                      # 20 offline checks of the handlers
+npm test                      # offline checks of the handlers and error rendering
 npm run build
 ```
 
 In the Vercel dashboard, under **Storage**, connect two things to the project:
 a **KV** store and a **Blob** store. Both inject their own credentials — there
 are no API keys to copy by hand.
+
+## When something is wrong on the deployment
+
+`GET /api/health` reports which credentials the running deployment can see and
+whether the store answers, without revealing any value:
+
+```json
+{ "ok": false, "env": { "kv": false, "blob": true }, "store": { "ok": false, "error": "…" } }
+```
+
+A 404 from that route means the serverless functions were not deployed at all,
+which is a different problem from a missing credential.
 
 ## Layout
 

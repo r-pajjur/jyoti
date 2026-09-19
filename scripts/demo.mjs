@@ -29,7 +29,7 @@ process.env.JYOTI_SEND_HOUR = '8';
 process.env.JYOTI_START_DATE = new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10);
 
 const dir = await mkdtemp(join(tmpdir(), 'jyoti-demo-'));
-const names = ['today', 'feed', 'archive', 'post', 'react'];
+const names = ['today', 'feed', 'archive', 'post', 'react', 'health'];
 await esbuild.build({
   entryPoints: names.map((n) => `api/${n}.ts`),
   entryNames: '[name]',
