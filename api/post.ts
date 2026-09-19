@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { randomUUID } from 'node:crypto';
 import { currentDay, TOTAL_DAYS } from './_lib/day';
-import { createPost, userSubject } from './_lib/padlet';
 import { decodePhoto, uploadPhoto } from './_lib/photos';
-import { promptForDay } from './_lib/prompts';
-import { fail, handleError, readName, requireMethod } from './_lib/http';
+import { savePost } from './_lib/store';
+import { fail, handleError, normalizeName, readName, requireMethod } from './_lib/http';
 
 interface PostBody {
   name?: string;
@@ -15,7 +15,7 @@ interface PostBody {
 
 /**
  * POST /api/post — the capture flow's single write.
- * Photo bytes go to Vercel Blob first, then the resulting URL goes to Padlet.
+ * Photo bytes go to Vercel Blob first, then the row goes to Redis.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!requireMethod(req, res, 'POST')) return;
@@ -33,12 +33,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const photoUrl = body.photo
       ? await uploadPhoto(decodePhoto(body.photo, body.photoType), name, day)
       : null;
-    const prompt = promptForDay(day);
-    const post = await createPost({
-      subject: userSubject(name, day),
-      body: text || prompt?.title || '',
+    const post = await savePost({
+      id: randomUUID(),
+      day,
+      author: name,
+      authorKey: normalizeName(name),
+      body: text.slice(0, 10000),
       photoUrl,
-      color: 'orange',
+      createdAt: new Date().toISOString(),
     });
     res.status(201).json({ post });
   } catch (error) {

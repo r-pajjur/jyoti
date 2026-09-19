@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Offline self-test: runs the serverless handlers against a fake Padlet board.
+ * Offline self-test: runs the serverless handlers against an in-memory store.
  * No API key, no network, no Blob. Checks day maths, subject parsing, the
  * reveal gate, and the archive's past-days-are-open rule.
  *
@@ -14,8 +14,8 @@ import { join } from 'node:path';
 import assert from 'node:assert/strict';
 import { writeDemoStubs } from './lib/stubs.mjs';
 
-process.env.PADLET_API_KEY = 'test-key';
-process.env.PADLET_BOARD_ID = 'test-board';
+process.env.KV_REST_API_URL = 'https://stub.invalid';
+process.env.KV_REST_API_TOKEN = 'stub';
 process.env.JYOTI_TIMEZONE = 'UTC';
 process.env.JYOTI_TOTAL_DAYS = '30';
 process.env.JYOTI_SEND_HOUR = '8';
@@ -25,50 +25,7 @@ const today = new Date();
 const start = new Date(today.getTime() - 2 * 86_400_000);
 process.env.JYOTI_START_DATE = start.toISOString().slice(0, 10);
 
-const board = {
-  data: { id: 'test-board', type: 'board', attributes: { title: 'Jyoti test' } },
-  included: [
-    post('p1', '💧 Day 3 · Prompt', 'the prompt', null),
-    post('p2', 'Lakshmi · Day 3', 'a still morning', 'https://blob.example/1.jpg'),
-    post('p3', 'Meera Nair · Day 3', 'grateful', null),
-    post('p4', 'Lakshmi · Day 1', 'came home', null),
-    post('p5', 'Anjali · Day 2', 'my altar', 'https://blob.example/2.jpg'),
-  ],
-};
-
-function post(id, subject, body, url) {
-  return {
-    id,
-    type: 'post',
-    attributes: {
-      content: { subject, body: `<p>${body}</p>`, attachment: url ? { url, previewImageUrl: url } : null },
-      createdAt: new Date().toISOString(),
-      webUrl: `https://padlet.com/${id}`,
-    },
-  };
-}
-
-let createdPosts = 0;
-let reactions = 0;
 globalThis.__demoOrigin = 'https://blob.test';
-globalThis.fetch = async (url, init) => {
-  const target = String(url);
-  if (target.includes('/boards/test-board?include=posts')) {
-    return new Response(JSON.stringify(board), { status: 200 });
-  }
-  if (target.endsWith('/boards/test-board/posts') && init?.method === 'POST') {
-    createdPosts++;
-    const sent = JSON.parse(init.body).data.attributes.content;
-    const created = post(`new${createdPosts}`, sent.subject, sent.body, sent.attachment?.url ?? null);
-    board.included.push(created);
-    return new Response(JSON.stringify({ data: created }), { status: 201 });
-  }
-  if (/\/posts\/[^/]+\/reactions$/.test(target) && init?.method === 'POST') {
-    reactions++;
-    return new Response(JSON.stringify({ data: {} }), { status: 201 });
-  }
-  throw new Error(`unexpected fetch: ${target}`);
-};
 
 function fakeRes() {
   const res = {
@@ -120,6 +77,18 @@ try {
     passed++;
   };
 
+  /* Seed the board the way the app does — through the post handler itself. */
+  const seed = async (name, day, text, photo) =>
+    call(postHandler, {}, { name, day, text, ...(photo ? { photo } : {}) }, 'POST');
+
+  const PIXEL =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
+  await seed('Lakshmi', 1, 'came home');
+  await seed('Anjali', 2, 'my altar');
+  await seed('Lakshmi', 3, 'a still morning', PIXEL);
+  await seed('Meera Nair', 3, 'grateful');
+
   const t = await call(todayHandler);
   check('GET /api/today returns day 3 and its prompt', () => {
     assert.equal(t.statusCode, 200);
@@ -149,38 +118,37 @@ try {
   check('feed unlocks on a case- and space-insensitive name match', () => {
     assert.equal(open.payload.locked, false);
     assert.equal(open.payload.posts.length, 2);
-    assert.equal(open.payload.posts.find((p) => p.id === 'p2').mine, true);
-    assert.equal(open.payload.posts.find((p) => p.id === 'p3').mine, false);
+    assert.equal(open.payload.posts.filter((post) => post.mine).length, 1);
+    assert.equal(open.payload.posts.find((post) => post.mine).author, 'Lakshmi');
   });
 
-  check('the daily prompt post is excluded from the feed', () => {
-    assert.equal(open.payload.posts.some((p) => p.id === 'p1'), false);
+  check('a multi-word name is kept intact', () => {
+    assert.ok(open.payload.posts.some((post) => post.author === 'Meera Nair'));
   });
 
-  check('HTML is stripped out of Padlet bodies', () => {
-    assert.equal(open.payload.posts.find((p) => p.id === 'p2').body, 'a still morning');
+  check('a photo survives the round trip as a URL', () => {
+    const withPhoto = open.payload.posts.find((post) => post.photoUrl);
+    assert.match(withPhoto.photoUrl, /^https?:\/\//);
+    assert.equal(globalThis.__blobs.size, 1);
   });
 
-  check('a multi-word name parses back out of the subject line', () => {
-    assert.equal(open.payload.posts.find((p) => p.id === 'p3').author, 'Meera Nair');
-  });
-
-  check('attachment URLs survive the round trip', () => {
-    assert.equal(open.payload.posts.find((p) => p.id === 'p2').photoUrl, 'https://blob.example/1.jpg');
+  check('one day\'s posts never leak into another', () => {
+    assert.ok(open.payload.posts.every((post) => post.day === 3));
   });
 
   const archive = await call(archiveHandler, { name: 'Priya' });
   check('archive opens past days but keeps today gated', () => {
-    const byDay = Object.fromEntries(archive.payload.days.map((d) => [d.day, d]));
+    const byDay = Object.fromEntries(archive.payload.days.map((entry) => [entry.day, entry]));
     assert.equal(byDay[3].locked, true);
     assert.deepEqual(byDay[3].posts, []);
-    assert.equal(byDay[2].locked, false);
-    assert.equal(byDay[2].posts.length, 1);
+    assert.equal(byDay[3].count, 2);
+    assert.equal(byDay[1].locked, false);
     assert.equal(byDay[1].posts.length, 1);
   });
 
   check('archive is ordered newest day first and stops at today', () => {
-    assert.deepEqual(archive.payload.days.map((d) => d.day), [3, 2, 1]);
+    assert.deepEqual(archive.payload.days.map((entry) => entry.day), [3, 2, 1]);
+    assert.equal(archive.payload.totalDays, 30);
   });
 
   const missing = await call(feedHandler, {});
@@ -197,35 +165,31 @@ try {
   const anonymous = await call(postHandler, {}, { text: 'hello' }, 'POST');
   check('a post without a name is rejected', () => assert.equal(anonymous.statusCode, 400));
 
-  const written = await call(postHandler, {}, { name: 'Priya', text: 'a quiet morning' }, 'POST');
-  check('a text-only post reaches Padlet under the day subject', () => {
-    assert.equal(written.statusCode, 201);
-    assert.equal(written.payload.post.author, 'Priya');
-    assert.equal(written.payload.post.day, 3);
-  });
-
-  const PIXEL =
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
-  const withPhoto = await call(postHandler, {}, { name: 'Priya', text: 'the sky now', photo: PIXEL }, 'POST');
-  check('a photo is hosted first, then handed to Padlet as a URL', () => {
-    assert.equal(withPhoto.statusCode, 201);
-    assert.match(withPhoto.payload.post.photoUrl, /^https?:\/\//);
-    assert.equal(globalThis.__blobs.size, 1);
-  });
+  const outside = await call(postHandler, {}, { name: 'Priya', day: 99, text: 'too far' }, 'POST');
+  check('a day outside the thirty is rejected', () => assert.equal(outside.statusCode, 400));
 
   const badType = await call(postHandler, {}, { name: 'Priya', photo: 'x', photoType: 'image/gif' }, 'POST');
   check('an unsupported image type is refused', () => assert.equal(badType.statusCode, 502));
 
+  const written = await call(postHandler, {}, { name: 'Priya', text: 'a quiet morning' }, 'POST');
+  check('a post is stored and comes back with an id', () => {
+    assert.equal(written.statusCode, 201);
+    assert.equal(written.payload.post.author, 'Priya');
+    assert.equal(written.payload.post.day, 3);
+    assert.ok(written.payload.post.id);
+  });
+
   const revealed = await call(feedHandler, { name: 'Priya' });
   check('posting unlocks the feed for that person', () => {
     assert.equal(revealed.payload.locked, false);
+    assert.equal(revealed.payload.count, 3);
     assert.ok(revealed.payload.posts.some((post) => post.mine));
   });
 
-  const blessed = await call(reactHandler, {}, { postId: 'p2' }, 'POST');
-  check('a blessing is recorded on Padlet', () => {
+  const blessed = await call(reactHandler, {}, { postId: written.payload.post.id }, 'POST');
+  check('a blessing is recorded', () => {
     assert.equal(blessed.statusCode, 200);
-    assert.equal(reactions, 1);
+    assert.equal(globalThis.__redis.get('jyoti:blessings')[written.payload.post.id], 1);
   });
 
   const blessNothing = await call(reactHandler, {}, {}, 'POST');

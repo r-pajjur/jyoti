@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 /**
  * Local demo server. Runs the REAL serverless handlers against an in-memory
- * fake Padlet board and a fake Blob store, so the whole app is clickable with
- * no API keys and no network.
+ * Redis and Blob, so the whole app is clickable with no credentials.
  *
  *   npm run demo        → http://localhost:4000
  *
  * What is real: every screen, the day maths, the post-to-reveal gate, the
  * archive, blessings, and all the api/ handler code.
- * What is faked: Padlet and Vercel Blob.
+ * What is faked: only the storage. Nothing survives a restart.
  */
 
 import * as esbuild from 'esbuild';
@@ -20,63 +19,14 @@ import { writeDemoStubs } from './lib/stubs.mjs';
 
 const PORT = Number(process.env.PORT || 4000);
 
-process.env.PADLET_API_KEY = 'demo-key';
-process.env.PADLET_BOARD_ID = 'demo-board';
+process.env.KV_REST_API_URL = 'https://stub.invalid';
+process.env.KV_REST_API_TOKEN = 'stub';
 process.env.JYOTI_TIMEZONE = 'UTC';
 process.env.JYOTI_TOTAL_DAYS = '30';
 process.env.JYOTI_SEND_HOUR = '8';
 
 // Pin the demo to Day 3, so there is already an archive behind you.
 process.env.JYOTI_START_DATE = new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10);
-
-const DAY = (n) => new Date(Date.now() - (3 - n) * 86_400_000).toISOString();
-let seq = 100;
-
-function post(subject, body, url, createdAt) {
-  return {
-    id: `p${seq++}`,
-    type: 'post',
-    attributes: {
-      content: { subject, body: `<p>${body}</p>`, attachment: url ? { url, previewImageUrl: url } : null },
-      createdAt: createdAt || new Date().toISOString(),
-      webUrl: 'https://padlet.com/demo',
-    },
-  };
-}
-
-// A board mid-ritual: two days behind you, and today already has other lamps lit.
-const posts = [
-  post('💧 Day 1 · Prompt', 'What did you carry home?', null, DAY(1)),
-  post('Lakshmi · Day 1', 'I carried back the quiet of the river at dawn.', null, DAY(1)),
-  post('Meera Nair · Day 1', 'A stillness I did not have before.', null, DAY(1)),
-  post('💧 Day 2 · Prompt', 'Your altar corner.', null, DAY(2)),
-  post('Anjali · Day 2', 'My small corner, swept and lit.', null, DAY(2)),
-  post('Lakshmi · Day 2', 'Marigolds from the balcony today.', null, DAY(2)),
-  post('💧 Day 3 · Prompt', 'Something near you that brought peace.', null, DAY(3)),
-  post('Anjali · Day 3', 'The light through the kitchen window at 6am.', null, DAY(3)),
-  post('Meera Nair · Day 3', 'My mother on the phone, laughing.', null, DAY(3)),
-];
-
-let reactions = 0;
-globalThis.fetch = async (url, init) => {
-  const target = String(url);
-  if (target.includes('/boards/demo-board?include=posts')) {
-    return new Response(JSON.stringify({ data: { id: 'demo-board', type: 'board' }, included: posts }), { status: 200 });
-  }
-  if (target.endsWith('/boards/demo-board/posts') && init?.method === 'POST') {
-    const sent = JSON.parse(init.body).data.attributes.content;
-    const created = post(sent.subject, sent.body, sent.attachment?.url ?? null);
-    posts.push(created);
-    console.log(`  [padlet] + ${sent.subject}${sent.attachment ? ' (with photo)' : ''}`);
-    return new Response(JSON.stringify({ data: created }), { status: 201 });
-  }
-  if (/\/posts\/[^/]+\/reactions$/.test(target) && init?.method === 'POST') {
-    reactions++;
-    console.log(`  [padlet] blessing #${reactions}`);
-    return new Response(JSON.stringify({ data: {} }), { status: 201 });
-  }
-  throw new Error(`demo: unexpected fetch ${target}`);
-};
 
 const dir = await mkdtemp(join(tmpdir(), 'jyoti-demo-'));
 const names = ['today', 'feed', 'archive', 'post', 'react'];
@@ -94,6 +44,24 @@ await esbuild.build({
 
 const handlers = {};
 for (const n of names) handlers[n] = (await import(join(dir, `${n}.mjs`))).default;
+
+/* Seed a board mid-ritual, through the real write path. */
+const seed = async (name, day, text) => {
+  const res = {
+    statusCode: 200,
+    setHeader() {},
+    status(code) { this.statusCode = code; return this; },
+    json() { return this; },
+  };
+  await handlers.post({ method: 'POST', query: {}, body: { name, day, text }, headers: {} }, res);
+};
+
+await seed('Lakshmi', 1, 'I carried back the quiet of the river at dawn.');
+await seed('Meera Nair', 1, 'A stillness I did not have before.');
+await seed('Anjali', 2, 'My small corner, swept and lit.');
+await seed('Lakshmi', 2, 'Marigolds from the balcony today.');
+await seed('Anjali', 3, 'The light through the kitchen window at 6am.');
+await seed('Meera Nair', 3, 'My mother on the phone, laughing.');
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -179,7 +147,7 @@ const lan = Object.values(networkInterfaces())
   .find((i) => i && i.family === 'IPv4' && !i.internal)?.address;
 
 server.listen(PORT, () => {
-  console.log(`\n💧 Jyoti demo — Day 3 of 30, fake Padlet board, no keys needed`);
+  console.log(`\n💧 Jyoti demo — Day 3 of 30, in-memory storage, no keys needed`);
   console.log(`   laptop  http://localhost:${PORT}`);
   if (lan) console.log(`   phone   http://${lan}:${PORT}   (screens only — install needs https)`);
   console.log(`\n   Seeded: 2 past days, and 2 other people have already posted today.`);

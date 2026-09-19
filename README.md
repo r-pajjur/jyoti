@@ -8,8 +8,8 @@ users on iPhone Safari.
 
 - **Frontend** — plain TypeScript bundled by esbuild into `public/app.js`. No framework.
 - **Backend** — Vercel serverless functions in `api/`.
-- **Board** — Padlet (JSON:API). Posts, reactions, and comments all live there.
-- **Photos** — Vercel Blob. Padlet's API accepts an attachment **URL** only, never a file.
+- **Store** — Vercel KV (Upstash Redis). Two hashes: posts, and blessing counts.
+- **Photos** — Vercel Blob. The database holds only the resulting URL.
 - **Look** — sandalwood and saffron, matching lifeseva.ca (Fraunces + Inter).
 
 There is no push, no cron, and no subscriber database: the daily nudge goes out
@@ -40,19 +40,23 @@ npm install
 npm run demo          # → http://localhost:4000
 ```
 
-Runs the real handlers against an in-memory Padlet and Blob. Starts on Day 3,
+Runs the real handlers against an in-memory store. Starts on Day 3,
 with two past days seeded and two people already posted today, so the reveal
 gate is visible immediately.
 
 ## Setup for real
 
 ```bash
-cp .env.example .env          # fill PADLET_API_KEY, PADLET_BOARD_ID, JYOTI_START_DATE
-vercel env pull .env          # pulls BLOB_READ_WRITE_TOKEN once Blob is connected
-npm run test:padlet           # verify the photo→Padlet path against a scratch board
-npm test                      # 19 offline checks of the handlers
+cp .env.example .env          # set JYOTI_START_DATE and JYOTI_GROUP_SIZE
+vercel link                   # connect the project
+vercel env pull .env          # pulls KV and Blob credentials once both are connected
+npm test                      # 20 offline checks of the handlers
 npm run build
 ```
+
+In the Vercel dashboard, under **Storage**, connect two things to the project:
+a **KV** store and a **Blob** store. Both inject their own credentials — there
+are no API keys to copy by hand.
 
 ## Layout
 

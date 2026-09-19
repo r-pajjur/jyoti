@@ -13,6 +13,12 @@ export class Redis {
   async hgetall(key) { return store.get(key) ?? null; }
   async hdel(key, field) { const h = store.get(key) ?? {}; delete h[field]; store.set(key, h); return 1; }
   async hlen(key) { return Object.keys(store.get(key) ?? {}).length; }
+  async hincrby(key, field, by) {
+    const h = store.get(key) ?? {};
+    h[field] = Number(h[field] ?? 0) + by;
+    store.set(key, h);
+    return h[field];
+  }
   async set(key, value, opts) {
     if (opts?.nx && store.has(key)) return null;
     store.set(key, value);

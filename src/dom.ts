@@ -7,7 +7,7 @@ export function el<T extends HTMLElement = HTMLElement>(markup: string): T {
   return node as T;
 }
 
-/** Everything from Padlet is user-authored — escape before it touches innerHTML. */
+/** Every post is user-authored — escape before it touches innerHTML. */
 export function esc(value: unknown): string {
   return String(value ?? '')
     .replace(/&/g, '&amp;')

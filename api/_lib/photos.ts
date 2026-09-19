@@ -1,8 +1,8 @@
 import { put } from '@vercel/blob';
 
 /**
- * Padlet only accepts an attachment URL, so every captured photo is hosted on
- * Vercel Blob first and the resulting public https URL is handed to Padlet.
+ * Photos are hosted on Vercel Blob; the stored post keeps only the resulting
+ * public https URL, so no image bytes ever pass through the database.
  */
 
 const ALLOWED = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']);
@@ -41,7 +41,7 @@ function slug(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24) || 'lamp';
 }
 
-/** Uploads to Blob and returns the public URL Padlet will fetch. */
+/** Uploads to Blob and returns the public URL the feed will render. */
 export async function uploadPhoto(photo: DecodedPhoto, name: string, day: number): Promise<string> {
   const key = `jyoti/day-${String(day).padStart(2, '0')}/${slug(name)}-${Date.now()}.${extensionFor(photo.contentType)}`;
   const blob = await put(key, photo.bytes, {
