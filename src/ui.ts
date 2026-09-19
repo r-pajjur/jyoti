@@ -8,12 +8,13 @@ export function loadingScreen(message = 'One moment…'): HTMLElement {
   return el(`<section class="boot"><div class="boot-drop"></div><p>${esc(message)}</p></section>`);
 }
 
-export function errorScreen(message: string, onRetry?: () => void): HTMLElement {
+export function errorScreen(message: string, onRetry?: () => void, detail?: string): HTMLElement {
   const node = el(`
     <section>
       <div class="card">
         <h2>That didn't go through</h2>
         <p class="muted">${esc(message)}</p>
+        ${detail ? `<p class="diag">${esc(detail)}</p>` : ''}
         ${onRetry ? '<button class="btn btn-ghost" data-retry>Try again</button>' : ''}
       </div>
     </section>

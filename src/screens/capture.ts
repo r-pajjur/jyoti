@@ -1,5 +1,5 @@
 import { el, esc, qs } from '../dom.js';
-import { fetchToday, submitPost } from '../api.js';
+import { ApiError, fetchToday, submitPost } from '../api.js';
 import { preparePhoto, type PreparedPhoto } from '../photo.js';
 import { markPosted } from '../state.js';
 import { errorScreen, loadingScreen } from '../ui.js';
@@ -15,7 +15,7 @@ export async function captureScreen(): Promise<HTMLElement> {
   try {
     today = await fetchToday();
   } catch (error) {
-    mountInto(host, errorScreen((error as Error).message, () => go('/capture', { reload: true })));
+    mountInto(host, errorScreen((error as Error).message, () => go('/capture', { reload: true }), (error as ApiError).detail));
     return host;
   }
   if (!today.active) {

@@ -1,5 +1,5 @@
 import { el, esc } from '../dom.js';
-import { fetchArchive, type ArchiveDay, type Post } from '../api.js';
+import { ApiError, fetchArchive, type ArchiveDay, type Post } from '../api.js';
 import { errorScreen, loadingScreen } from '../ui.js';
 import { go, mountInto } from '../router.js';
 
@@ -105,7 +105,7 @@ export async function calendarScreen(): Promise<HTMLElement> {
     mountInto(host, view);
     return host;
   } catch (error) {
-    mountInto(host, errorScreen((error as Error).message, () => go('/calendar', { reload: true })));
+    mountInto(host, errorScreen((error as Error).message, () => go('/calendar', { reload: true }), (error as ApiError).detail));
     return host;
   }
 }

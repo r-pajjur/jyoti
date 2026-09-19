@@ -325,6 +325,18 @@ textarea { min-height: 140px; line-height: 1.5; resize: vertical; }
 }
 .steps strong { color: var(--ochre); font-weight: 600; }
 
+.diag {
+  margin: 0 0 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: var(--chandan-deep);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 8px 10px;
+  overflow-wrap: anywhere;
+}
+
 .note { padding: 14px 16px; border-radius: 10px; font-size: 16px; border: 1px solid var(--hairline); background: var(--chandan-deep); color: var(--ink-soft); }
 .note-warn { border-color: var(--kumkum); color: var(--kumkum); background: color-mix(in srgb, var(--kumkum) 8%, transparent); }
 .note-good { border-color: var(--tulsi); color: var(--tulsi); background: color-mix(in srgb, var(--tulsi) 8%, transparent); }

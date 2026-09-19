@@ -52,7 +52,15 @@ export interface ArchiveResponse {
   days: ArchiveDay[];
 }
 
-export class ApiError extends Error {}
+export class ApiError extends Error {
+  /** Where it failed and with what status — shown on screen so a screenshot is
+   *  enough to diagnose a deployment nobody can reach from a laptop. */
+  readonly detail?: string;
+  constructor(message: string, detail?: string) {
+    super(message);
+    this.detail = detail;
+  }
+}
 
 /**
  * Pull a human message out of whatever came back. Our own handlers send
@@ -81,7 +89,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       headers: { Accept: 'application/json', ...(init?.body ? { 'Content-Type': 'application/json' } : {}) },
     });
   } catch {
-    throw new ApiError('No connection. This will work again once you are back online.');
+    throw new ApiError('No connection. This will work again once you are back online.', `${path} — unreachable`);
   }
 
   // A crashed or missing function can answer with an HTML error page, so the
@@ -94,7 +102,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     payload = {};
   }
 
-  if (!response.ok) throw new ApiError(errorMessage(payload, response.status));
+  if (!response.ok) {
+    throw new ApiError(errorMessage(payload, response.status), `${path} — HTTP ${response.status}`);
+  }
   return payload as T;
 }
 

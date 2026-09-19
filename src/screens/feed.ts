@@ -1,5 +1,5 @@
 import { delegate, el, esc } from '../dom.js';
-import { bless, fetchFeed, type Post } from '../api.js';
+import { ApiError, bless, fetchFeed, type Post } from '../api.js';
 import { isBlessed, markBlessed, markPosted } from '../state.js';
 import { errorScreen, loadingScreen, softTime } from '../ui.js';
 import { go, mountInto } from '../router.js';
@@ -87,7 +87,7 @@ export async function feedScreen(): Promise<HTMLElement> {
     mountInto(host, view);
     return host;
   } catch (error) {
-    mountInto(host, errorScreen((error as Error).message, () => go('/feed', { reload: true })));
+    mountInto(host, errorScreen((error as Error).message, () => go('/feed', { reload: true }), (error as ApiError).detail));
     return host;
   }
 }
