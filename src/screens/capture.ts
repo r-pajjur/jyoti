@@ -42,7 +42,7 @@ export async function captureScreen(): Promise<HTMLElement> {
                   placeholder="${wantsPhoto ? 'Where this was, what it held…' : 'However it comes out. Nobody is marking this.'}"></textarea>
         <div class="counter" data-counter>0 / ${MAX_TEXT}</div>
       </div>
-      <button class="btn" data-post disabled>Light my lamp</button>
+      <button class="btn" data-post disabled>Add your drop to the river</button>
       <p class="small muted center" data-status></p>
     </div>
   `);
@@ -103,7 +103,7 @@ export async function captureScreen(): Promise<HTMLElement> {
 
   postButton.addEventListener('click', async () => {
     postButton.disabled = true;
-    postButton.textContent = 'Lighting…';
+    postButton.textContent = 'Adding…';
     status.textContent = photo ? 'Sending your photo — this can take a moment on mobile data.' : '';
     try {
       await submitPost({
@@ -116,7 +116,7 @@ export async function captureScreen(): Promise<HTMLElement> {
     } catch (error) {
       status.textContent = (error as Error).message;
       postButton.disabled = false;
-      postButton.textContent = 'Light my lamp';
+      postButton.textContent = 'Add your drop to the river';
     }
   });
 

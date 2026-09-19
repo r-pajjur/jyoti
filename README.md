@@ -16,13 +16,22 @@ There is no push, no cron, and no subscriber database: the daily nudge goes out
 by hand over WhatsApp. The app simply shows whichever day it is, counting
 forward from `JYOTI_START_DATE`.
 
-## Two tabs
+## One screen, then the river
 
-**Today** — the day's prompt. Locked until you post: you see a count of lit
-lamps and nothing else. Post, and the day's feed opens with blessings.
+**Today** opens closed. You see how many of the group have gone before you —
+"3/20 lamps lit" — and nothing else. Not the prompt, not the posts. The prompt
+is withheld by the server, not merely hidden by the UI, and appears when you
+tap *Add your drop to the river*.
 
-**Calendar** — the month as a 30-square grid, each lit day carrying a photo.
-Tap a day to open it. Toggle between everyone's lamps and your own thread.
+Posting opens the day's feed, where each drop can be blessed with a heart. No
+counts on the hearts: you can tell someone you saw them without it becoming a
+score.
+
+**The river** — the month as a compact grid of days, reachable only once you
+have added today's drop. Tap any past day to see what the group gathered. It is
+the group's thread, not yours; there is no private view.
+
+Set the group size with `JYOTI_GROUP_SIZE` (default 20).
 
 ## Try it with no credentials
 

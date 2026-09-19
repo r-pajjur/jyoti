@@ -1,6 +1,8 @@
 /** Day-number arithmetic in the group's own timezone, not the server's. */
 
 export const TOTAL_DAYS = Number(process.env.JYOTI_TOTAL_DAYS || 30);
+/** How many people are in the group — the denominator in "3 of 20 lamps lit". */
+export const GROUP_SIZE = Number(process.env.JYOTI_GROUP_SIZE || 20);
 const TIMEZONE = process.env.JYOTI_TIMEZONE || 'Asia/Kolkata';
 const START_DATE = process.env.JYOTI_START_DATE || '2026-09-22';
 

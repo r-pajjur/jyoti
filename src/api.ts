@@ -32,6 +32,7 @@ export interface FeedResponse {
   day: number;
   locked: boolean;
   count: number;
+  groupSize: number;
   prompt: Prompt | null;
   posts: Post[];
 }

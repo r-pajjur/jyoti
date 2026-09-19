@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { currentDay } from './_lib/day';
+import { currentDay, GROUP_SIZE } from './_lib/day';
 import { fetchBoardPosts } from './_lib/padlet';
 import { promptForDay } from './_lib/prompts';
 import { fail, handleError, normalizeName, readName, requireMethod } from './_lib/http';
@@ -23,12 +23,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const mine = posts.find((post) => post.author && normalizeName(post.author) === normalizeName(name));
 
     if (!mine) {
-      return res.status(200).json({ day, locked: true, count: posts.length, prompt: promptForDay(day), posts: [] });
+      // Locked: a count and the group size, never the prompt or the posts.
+      return res.status(200).json({ day, locked: true, count: posts.length, groupSize: GROUP_SIZE, posts: [] });
     }
     res.status(200).json({
       day,
       locked: false,
       count: posts.length,
+      groupSize: GROUP_SIZE,
       prompt: promptForDay(day),
       posts: posts.map((post) => ({ ...post, mine: post.id === mine.id })),
     });

@@ -133,10 +133,19 @@ try {
   check('feed is locked, and leaks only a count, for someone who has not posted', () => {
     assert.equal(locked.payload.locked, true);
     assert.equal(locked.payload.count, 2);
+    assert.equal(locked.payload.groupSize, 20);
     assert.deepEqual(locked.payload.posts, []);
   });
 
+  check('the prompt itself is withheld while the feed is locked', () => {
+    assert.equal(locked.payload.prompt, undefined);
+  });
+
   const open = await call(feedHandler, { name: '  lakshmi  ' });
+  check('the prompt arrives once the feed is unlocked', () => {
+    assert.ok(open.payload.prompt.text);
+  });
+
   check('feed unlocks on a case- and space-insensitive name match', () => {
     assert.equal(open.payload.locked, false);
     assert.equal(open.payload.posts.length, 2);

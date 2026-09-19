@@ -8,7 +8,7 @@ function postCard(post: Post): string {
   const blessed = isBlessed(post.id);
   return `
     <article class="post ${post.mine ? 'post-mine' : ''}">
-      ${post.photoUrl ? `<img loading="lazy" decoding="async" alt="A lamp from ${esc(post.author ?? 'the group')}" src="${esc(post.photoUrl)}">` : ''}
+      ${post.photoUrl ? `<img loading="lazy" decoding="async" alt="A drop from ${esc(post.author ?? 'the group')}" src="${esc(post.photoUrl)}">` : ''}
       <div class="post-body">
         <p class="post-author">${esc(post.author ?? 'Someone')}${post.mine ? ' · you' : ''}</p>
         ${post.body ? `<p class="post-text">${esc(post.body)}</p>` : ''}
@@ -17,9 +17,8 @@ function postCard(post: Post): string {
           ${
             post.mine
               ? ''
-              : `<button class="bless" data-bless="${esc(post.id)}" data-blessed="${blessed}" ${blessed ? 'disabled' : ''}>
-                   ${blessed ? '🪔 blessed' : '🪔 bless'}
-                 </button>`
+              : `<button class="bless" data-bless="${esc(post.id)}" data-blessed="${blessed}"
+                         aria-label="Bless this" ${blessed ? 'disabled' : ''}>${blessed ? '♥' : '♡'}</button>`
           }
         </div>
       </div>
@@ -33,24 +32,23 @@ export async function feedScreen(): Promise<HTMLElement> {
   try {
     const feed = await fetchFeed();
 
+    // Before you post: no prompt, no posts — only how many have gone before you.
     if (feed.locked) {
-      const dots = Array.from({ length: Math.min(feed.count, 30) }, () => '<span class="dot"></span>').join('');
+      const dots = Array.from(
+        { length: Math.max(feed.groupSize, feed.count) },
+        (_, index) => `<span class="dot ${index < feed.count ? 'dot-lit' : ''}"></span>`,
+      ).join('');
       mountInto(
         host,
         el(`
-          <div>
-            <div class="center">
-              <span class="eyebrow">Day ${feed.day}</span>
-            </div>
-            <div class="prompt">${esc(feed.prompt?.text ?? '')}</div>
-            <div class="locked card">
-              <div class="lamp lamp-unlit"></div>
-              <p class="count">${feed.count}</p>
-              <h2>${feed.count === 1 ? 'lamp is lit' : 'lamps are lit'} today</h2>
-              <div class="dots">${dots}</div>
-              <p class="muted">You'll see them all the moment you light yours. Sometime today is perfect — there is no hurry.</p>
-              <a class="btn" href="#/capture">Light my lamp</a>
-            </div>
+          <div class="locked card">
+            <div class="lamp lamp-unlit"></div>
+            <span class="eyebrow">Day ${feed.day}</span>
+            <p class="count">${feed.count}/${feed.groupSize}</p>
+            <h2>lamps lit today</h2>
+            <div class="dots">${dots}</div>
+            <p class="muted">Sometime today is perfect — there is no hurry.</p>
+            <a class="btn" href="#/capture">Add your drop to the river</a>
           </div>
         `),
       );
@@ -62,29 +60,27 @@ export async function feedScreen(): Promise<HTMLElement> {
     const view = el(`
       <div>
         <span class="eyebrow">Day ${feed.day}</span>
-        <h1>${feed.count} ${feed.count === 1 ? 'lamp' : 'lamps'} today</h1>
+        <h1>${feed.count}/${feed.groupSize} lamps lit</h1>
         <p class="muted">${esc(feed.prompt?.text ?? '')}</p>
         <div class="grid ${withPhotos === 0 ? 'grid-1' : ''}" data-grid>
           ${feed.posts.map(postCard).join('')}
         </div>
-        <a class="btn btn-quiet" href="#/calendar">See the whole month</a>
+        <a class="btn btn-quiet" href="#/calendar">See the whole river</a>
       </div>
     `);
 
     delegate(view, '[data-bless]', 'click', async (button) => {
       const postId = button.dataset.bless;
       if (!postId) return;
-      const original = button.textContent;
       (button as HTMLButtonElement).disabled = true;
-      button.textContent = '🪔 …';
+      button.textContent = '♥';
       try {
         await bless(postId);
         markBlessed(postId);
         button.dataset.blessed = 'true';
-        button.textContent = '🪔 blessed';
       } catch {
         (button as HTMLButtonElement).disabled = false;
-        button.textContent = original;
+        button.textContent = '♡';
       }
     });
 
