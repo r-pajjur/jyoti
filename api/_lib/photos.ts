@@ -41,14 +41,37 @@ function slug(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24) || 'drop';
 }
 
-/** Uploads to Blob and returns the public URL the feed will render. */
+/**
+ * A Blob store is created either public or private and cannot be both, so the
+ * mode is discovered once from the store's own rejection and remembered for
+ * the life of the instance.
+ */
+let storeAccess: 'public' | 'private' | null = null;
+
+/**
+ * Uploads to Blob and returns what the feed should use as an <img> src:
+ * the blob's own URL for a public store, or a path through /api/photo for a
+ * private one, which streams it back with the server-side token.
+ */
 export async function uploadPhoto(photo: DecodedPhoto, name: string, day: number): Promise<string> {
   const key = `jyoti/day-${String(day).padStart(2, '0')}/${slug(name)}-${Date.now()}.${extensionFor(photo.contentType)}`;
-  const blob = await put(key, photo.bytes, {
-    access: 'public',
+  const options = {
     contentType: photo.contentType,
     addRandomSuffix: true,
     cacheControlMaxAge: 31_536_000,
-  });
-  return blob.url;
+  };
+
+  if (storeAccess !== 'private') {
+    try {
+      const blob = await put(key, photo.bytes, { ...options, access: 'public' });
+      storeAccess = 'public';
+      return blob.url;
+    } catch (error) {
+      if (!/private store/i.test(error instanceof Error ? error.message : '')) throw error;
+      storeAccess = 'private';
+    }
+  }
+
+  const blob = await put(key, photo.bytes, { ...options, access: 'private' });
+  return `/api/photo?p=${encodeURIComponent(blob.pathname)}`;
 }

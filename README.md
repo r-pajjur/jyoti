@@ -9,7 +9,8 @@ users on iPhone Safari.
 - **Frontend** — plain TypeScript bundled by esbuild into `public/app.js`. No framework.
 - **Backend** — Vercel serverless functions in `api/`.
 - **Store** — any Redis, over a standard `REDIS_URL`. Two hashes: posts, and blessing counts.
-- **Photos** — Vercel Blob. The database holds only the resulting URL.
+- **Photos** — Vercel Blob. A public store yields a direct URL; a private one is
+  streamed back through `/api/photo`, discovered automatically on first upload.
 - **Look** — sandalwood and saffron, matching lifeseva.ca (Fraunces + Inter).
 
 There is no push, no cron, and no subscriber database: the daily nudge goes out
@@ -50,7 +51,8 @@ gate is visible immediately.
 cp .env.example .env          # set JYOTI_START_DATE and JYOTI_GROUP_SIZE
 vercel link                   # connect the project
 vercel env pull .env          # pulls KV and Blob credentials once both are connected
-npm test                      # offline checks of the handlers and error rendering
+npm test                      # offline checks: handlers, error rendering, Redis wire
+npm run test:blob             # real upload + read-back against the live Blob store
 npm run build
 ```
 
