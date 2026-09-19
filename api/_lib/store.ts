@@ -35,12 +35,56 @@ let client: RedisClientType | null = null;
  * One connection per warm serverless instance, reconnected if it dropped
  * between invocations.
  */
+/** Names storage providers are known to use, tried in order. */
+const URL_VARS = ['REDIS_URL', 'KV_URL', 'REDIS_TLS_URL', 'UPSTASH_REDIS_URL', 'REDISCLOUD_URL'];
+
+/**
+ * Finds the connection string. Providers disagree about the variable's name,
+ * so after the known ones this falls back to any variable whose value is
+ * itself a redis:// URL — which is unambiguous, and saves a deploy cycle spent
+ * guessing.
+ */
+function connectionUrl(): string | null {
+  for (const name of URL_VARS) {
+    const value = process.env[name];
+    if (value && /^rediss?:\/\//.test(value)) return value;
+  }
+  for (const [, value] of Object.entries(process.env)) {
+    if (value && /^rediss?:\/\/.+@/.test(value)) return value;
+  }
+  return null;
+}
+
+/** Names only — safe to show, and enough to see what the deployment is missing. */
+export function storageVarNames(): string[] {
+  return Object.keys(process.env)
+    .filter((key) => /REDIS|^KV_|BLOB/.test(key))
+    .sort();
+}
+
 async function redis(): Promise<RedisClientType> {
-  const url = process.env.REDIS_URL || process.env.KV_URL;
-  if (!url) throw new Error('Missing required environment variable: REDIS_URL');
+  const url = connectionUrl();
+  if (!url) {
+    const seen = storageVarNames();
+    throw new Error(
+      `Missing required environment variable: REDIS_URL. Storage variables this deployment can see: ${
+        seen.length ? seen.join(', ') : 'none'
+      }`,
+    );
+  }
 
   if (!client) {
-    client = createClient({ url, socket: { connectTimeout: 8000, reconnectStrategy: (n) => Math.min(n * 100, 2000) } });
+    client = createClient({
+      url,
+      socket: {
+        connectTimeout: 5000,
+        // Give up rather than retry forever: in a serverless function an
+        // endless reconnect loop burns the whole invocation and the caller
+        // waits for a timeout instead of seeing the error.
+        reconnectStrategy: (attempts) =>
+          attempts > 2 ? new Error('Redis is unreachable') : Math.min((attempts + 1) * 150, 600),
+      },
+    });
     // Without a listener, a connection error is thrown as an unhandled event
     // and takes the whole function down instead of failing this one request.
     client.on('error', (error) => console.error('[jyoti] redis', error?.message ?? error));

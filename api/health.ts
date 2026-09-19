@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { currentDay, GROUP_SIZE, TOTAL_DAYS } from './_lib/day';
-import { allPosts, pingStore } from './_lib/store';
+import { allPosts, pingStore, storageVarNames } from './_lib/store';
 import { requireMethod } from './_lib/http';
 
 /**
@@ -22,9 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   };
 
   // Names only, never values: which storage variables does this deployment see?
-  const seen = Object.keys(process.env)
-    .filter((key) => /^(KV_|UPSTASH_|REDIS|BLOB_)/.test(key))
-    .sort();
+  const seen = storageVarNames();
 
   let store: { ok: boolean; ping?: string; posts?: number; error?: string };
   try {
