@@ -9,10 +9,10 @@ export function onboardingScreen(): HTMLElement {
   const view = el(`
     <div>
       <div class="center">
-        <div class="lamp"></div>
+        <div class="drop"></div>
         <span class="eyebrow">Jyoti · ज्योति</span>
         <h1>What shall we call you?</h1>
-        <p class="muted">This is the name the group will see beside your lamp. Your first name is plenty.</p>
+        <p class="muted">This is the name the group will see beside your drop. Your first name is plenty.</p>
       </div>
       <div class="card">
         <div class="field">

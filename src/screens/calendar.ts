@@ -40,7 +40,7 @@ export async function calendarScreen(): Promise<HTMLElement> {
         host,
         el(`
           <div class="locked card">
-            <div class="lamp lamp-unlit"></div>
+            <div class="drop drop-unlit"></div>
             <h2>The river is still</h2>
             <p class="muted">Add your drop for today and the whole month opens — every day the group has gathered so far.</p>
             <a class="btn" href="#/capture">Add your drop to the river</a>

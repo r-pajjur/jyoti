@@ -38,7 +38,7 @@ function extensionFor(contentType: string): string {
 }
 
 function slug(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24) || 'lamp';
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24) || 'drop';
 }
 
 /** Uploads to Blob and returns the public URL the feed will render. */

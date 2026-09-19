@@ -66,8 +66,8 @@ export const PROMPTS: Prompt[] = [
     text: 'A face you love. Ask them first, and tell them it is for the yatra group.' },
   { day: 29, type: 'photo', title: 'Your altar again',
     text: 'Your altar again — the same frame as Day 2, if you can manage it. See what has shifted.' },
-  { day: 30, type: 'reflection', title: 'Thirty lamps',
-    text: 'Thirty days of lamps. Walk back through the whole gallery first, slowly. Then tell us: what did this month light up in you?' },
+  { day: 30, type: 'reflection', title: 'Thirty drops',
+    text: 'Thirty days of drops. Walk back through the whole gallery first, slowly. Then tell us: what did this month light up in you?' },
 ];
 
 export function promptForDay(day: number): Prompt | null {

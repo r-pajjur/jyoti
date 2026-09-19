@@ -42,10 +42,10 @@ export async function feedScreen(): Promise<HTMLElement> {
         host,
         el(`
           <div class="locked card">
-            <div class="lamp lamp-unlit"></div>
+            <div class="drop drop-unlit"></div>
             <span class="eyebrow">Day ${feed.day}</span>
             <p class="count">${feed.count}/${feed.groupSize}</p>
-            <h2>lamps lit today</h2>
+            <h2>drops in the river today</h2>
             <div class="dots">${dots}</div>
             <p class="muted">Sometime today is perfect — there is no hurry.</p>
             <a class="btn" href="#/capture">Add your drop to the river</a>
@@ -60,7 +60,7 @@ export async function feedScreen(): Promise<HTMLElement> {
     const view = el(`
       <div>
         <span class="eyebrow">Day ${feed.day}</span>
-        <h1>${feed.count}/${feed.groupSize} lamps lit</h1>
+        <h1>${feed.count}/${feed.groupSize} drops today</h1>
         <p class="muted">${esc(feed.prompt?.text ?? '')}</p>
         <div class="grid ${withPhotos === 0 ? 'grid-1' : ''}" data-grid>
           ${feed.posts.map(postCard).join('')}

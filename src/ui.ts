@@ -5,7 +5,7 @@ export function section(markup: string): HTMLElement {
 }
 
 export function loadingScreen(message = 'One moment…'): HTMLElement {
-  return el(`<section class="boot"><div class="boot-lamp"></div><p>${esc(message)}</p></section>`);
+  return el(`<section class="boot"><div class="boot-drop"></div><p>${esc(message)}</p></section>`);
 }
 
 export function errorScreen(message: string, onRetry?: () => void): HTMLElement {

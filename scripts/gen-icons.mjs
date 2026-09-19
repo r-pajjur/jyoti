@@ -1,6 +1,6 @@
 import { writeFile, mkdir } from 'node:fs/promises';
 import { encodePNG } from './lib/png.mjs';
-import { renderLamp } from './lib/lamp.mjs';
+import { renderDrop } from './lib/drop.mjs';
 
 const TARGETS = [
   { file: 'icon-192.png', size: 192, scale: 1 },
@@ -8,13 +8,13 @@ const TARGETS = [
   { file: 'icon-maskable-512.png', size: 512, scale: 0.78 },
   { file: 'apple-touch-icon.png', size: 180, scale: 1 },
   { file: 'favicon-32.png', size: 32, scale: 1 },
-  // Transparent glyph used as the in-app lamp.
-  { file: 'lamp.png', size: 512, scale: 1, background: false },
+  // Transparent glyph used as the in-app drop.
+  { file: 'drop.png', size: 512, scale: 1, background: false },
 ];
 
 await mkdir('public/icons', { recursive: true });
 for (const target of TARGETS) {
-  const pixels = renderLamp(target.size, { scale: target.scale, background: target.background !== false });
+  const pixels = renderDrop(target.size, { scale: target.scale, background: target.background !== false });
   await writeFile(`public/icons/${target.file}`, encodePNG(target.size, target.size, pixels));
   console.log(`[jyoti] icons/${target.file}`);
 }

@@ -12,7 +12,7 @@ export function welcomeScreen(): HTMLElement {
         <li>Tap the <strong>Share</strong> button at the bottom of Safari — the square with an arrow pointing up.</li>
         <li>Scroll down the list and tap <strong>Add to Home Screen</strong>.</li>
         <li>Tap <strong>Add</strong> in the top right corner.</li>
-        <li>Close Safari, then open <strong>Jyoti</strong> from your home screen — the little lamp.</li>
+        <li>Close Safari, then open <strong>Jyoti</strong> from your home screen — the little drop.</li>
       </ol>
       ${
         inSafari
@@ -29,10 +29,10 @@ export function welcomeScreen(): HTMLElement {
   const node = el(`
     <section>
       <div class="center">
-        <div class="lamp"></div>
+        <div class="drop"></div>
         <span class="eyebrow">Jyoti · ज्योति</span>
         <h1>Thirty mornings of light</h1>
-        <p class="muted">We have come home from the yatra. For the next thirty days, one gentle prompt each morning — a photo, or a few words. When you light your lamp, you get to see everyone else's.</p>
+        <p class="muted">We have come home from the yatra. For the next thirty days, one gentle prompt each morning — a photo, or a few words. When you add your drop, you get to see everyone else's.</p>
       </div>
       <hr class="rule">
       <div class="card">
