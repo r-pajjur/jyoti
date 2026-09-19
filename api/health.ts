@@ -22,6 +22,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     totalDays: TOTAL_DAYS,
   };
 
+  // Names only, never values: which storage variables does this deployment see?
+  const seen = Object.keys(process.env)
+    .filter((key) => /^(KV_|UPSTASH_|REDIS|BLOB_)/.test(key))
+    .sort();
+
   let store: { ok: boolean; posts?: number; error?: string };
   try {
     store = { ok: true, posts: (await allPosts()).length };
@@ -30,5 +35,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const ok = env.kv && env.kvToken && env.blob && store.ok;
-  res.status(ok ? 200 : 503).json({ ok, day: currentDay(), env, store });
+  res.status(ok ? 200 : 503).json({ ok, day: currentDay(), env, seen, store });
 }
