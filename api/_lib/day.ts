@@ -4,7 +4,16 @@ export const TOTAL_DAYS = Number(process.env.JYOTI_TOTAL_DAYS || 30);
 /** How many people are in the group — the denominator in "3/20 drops today". */
 export const GROUP_SIZE = Number(process.env.JYOTI_GROUP_SIZE || 20);
 const TIMEZONE = process.env.JYOTI_TIMEZONE || 'Asia/Kolkata';
-const START_DATE = process.env.JYOTI_START_DATE || '2026-09-22';
+
+/** A variable set to an empty string is the same as unset, which is how an
+ *  env var typed into a dashboard with no value arrives. */
+const CONFIGURED_START = (process.env.JYOTI_START_DATE || '').trim();
+const START_DATE = /^\d{4}-\d{2}-\d{2}$/.test(CONFIGURED_START) ? CONFIGURED_START : '';
+
+/** True only when a usable start date was supplied. */
+export function isConfigured(): boolean {
+  return START_DATE !== '';
+}
 
 /** Civil date in the ritual timezone, as YYYY-MM-DD. */
 export function todayKey(now: Date = new Date()): string {
@@ -52,10 +61,13 @@ export function startDateKey(): string {
   return START_DATE;
 }
 
+/** Unconfigured means there is no Day 1 to count from, so there is no day. */
+
+
 export function isWithinRitual(day: number): boolean {
   return day >= 1 && day <= TOTAL_DAYS;
 }
 
 export function ritualConfig() {
-  return { timezone: TIMEZONE, startDate: START_DATE, totalDays: TOTAL_DAYS };
+  return { timezone: TIMEZONE, startDate: START_DATE || null, totalDays: TOTAL_DAYS, configured: isConfigured() };
 }

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { currentDay, GROUP_SIZE, isWithinRitual, startDateKey, TOTAL_DAYS } from './_lib/day.js';
+import { currentDay, GROUP_SIZE, isConfigured, isWithinRitual, startDateKey, TOTAL_DAYS } from './_lib/day.js';
 import { postsForDay } from './_lib/store.js';
 import { promptForDay } from './_lib/prompts.js';
 import { fail, handleError, normalizeName, readName, requireMethod } from './_lib/http.js';
@@ -26,7 +26,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const phase = day < 1 ? 'before' : day > TOTAL_DAYS ? 'after' : 'during';
     if (!active) {
       return res.status(200).json({
-        day, locked: true, active, phase, startDate: startDateKey(),
+        day, locked: true, active, phase,
+        startDate: startDateKey() || null,
+        configured: isConfigured(),
         count: 0, groupSize: GROUP_SIZE, posts: [],
       });
     }

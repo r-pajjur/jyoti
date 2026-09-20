@@ -33,7 +33,8 @@ export interface FeedResponse {
   locked: boolean;
   active: boolean;
   phase: 'before' | 'during' | 'after';
-  startDate?: string;
+  startDate?: string | null;
+  configured?: boolean;
   count: number;
   groupSize: number;
   prompt: Prompt | null;

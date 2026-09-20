@@ -49,7 +49,9 @@ export async function feedScreen(): Promise<HTMLElement> {
             <h2>${waiting ? 'Not yet' : 'The river has run'}</h2>
             <p class="muted">${
               waiting
-                ? `We begin${when ? ` on ${esc(when)}` : ' soon'}. A prompt will be waiting for you that morning.`
+                ? feed.configured === false
+                  ? 'Jyoti is almost ready — the start date has not been set yet.'
+                  : `We begin${when ? ` on ${esc(when)}` : ' soon'}. A prompt will be waiting for you that morning.`
                 : 'Thirty mornings, all of them gathered. Thank you for every drop.'
             }</p>
             ${waiting ? '' : '<a class="btn btn-quiet" href="#/calendar">See the whole river</a>'}

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { currentDay, GROUP_SIZE, TOTAL_DAYS } from './_lib/day.js';
+import { currentDay, GROUP_SIZE, isConfigured, ritualConfig, TOTAL_DAYS } from './_lib/day.js';
 import { allPosts, pingStore, storageVarNames } from './_lib/store.js';
 import { requireMethod } from './_lib/http.js';
 
@@ -20,11 +20,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     region: process.env.VERCEL_REGION ?? null,
   };
 
+  // Effective values — what the app actually uses — not the raw variables. A
+  // variable present but empty reads as unset, which is otherwise invisible.
+  const config = ritualConfig();
+  const blobToken = (process.env.BLOB_READ_WRITE_TOKEN || '').trim();
   const env = {
     redis: !!(process.env.REDIS_URL || process.env.KV_URL),
-    blob: !!process.env.BLOB_READ_WRITE_TOKEN,
-    startDate: process.env.JYOTI_START_DATE ?? null,
-    timezone: process.env.JYOTI_TIMEZONE ?? null,
+    blob: blobToken.length > 0,
+    blobTokenPresentButEmpty: 'BLOB_READ_WRITE_TOKEN' in process.env && blobToken.length === 0,
+    startDate: config.startDate,
+    startDateConfigured: isConfigured(),
+    timezone: config.timezone,
     groupSize: GROUP_SIZE,
     totalDays: TOTAL_DAYS,
   };
@@ -50,6 +56,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     store = { ok: false, error: error instanceof Error ? error.message : 'unknown' };
   }
 
-  const ok = env.redis && env.blob && store.ok;
+  const ok = env.redis && env.blob && env.startDateConfigured && store.ok;
   res.status(ok ? 200 : 503).json({ ok, build, day: currentDay(), env, seen, store });
 }
