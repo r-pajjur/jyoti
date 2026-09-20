@@ -19,7 +19,7 @@ const value = (name) => {
   return at >= 0 ? args[at + 1] : undefined;
 };
 
-const URL_BASE = (value('url') ?? process.env.DHARA_URL ?? 'https://jyoti-nu.vercel.app').replace(/\/+$/, '');
+const URL_BASE = (value('url') ?? process.env.DHARA_URL ?? 'https://dhara-cmn.vercel.app').replace(/\/+$/, '');
 const START = process.env.DHARA_START_DATE ?? process.env.JYOTI_START_DATE ?? '2026-09-20';
 const TIMEZONE = process.env.DHARA_TIMEZONE ?? process.env.JYOTI_TIMEZONE ?? 'Asia/Kolkata';
 

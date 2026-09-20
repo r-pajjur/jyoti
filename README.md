@@ -61,6 +61,8 @@ a **Redis** database (any Marketplace provider) and a **Blob** store. Both
 inject their own credentials — there are no API keys to copy by hand. A new
 deployment is required before injected variables take effect.
 
+Live at <https://dhara-cmn.vercel.app>.
+
 ## Sending the morning message
 
 There is no push. The daily nudge goes out by hand over WhatsApp, and this
