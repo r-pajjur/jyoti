@@ -48,7 +48,7 @@
   "crons": [
     {
       "path": "/api/cron/daily",
-      "schedule": "30 2 * * *"
+      "schedule": "0 12 * * *"
     }
   ],
   "functions": {

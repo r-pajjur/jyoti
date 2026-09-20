@@ -13,7 +13,7 @@ function setting(name: string): string {
 export const TOTAL_DAYS = Number(setting('TOTAL_DAYS') || 30);
 /** How many people are in the group — the denominator in "3/20 drops today". */
 export const GROUP_SIZE = Number(setting('GROUP_SIZE') || 20);
-const TIMEZONE = setting('TIMEZONE') || 'Asia/Kolkata';
+const TIMEZONE = setting('TIMEZONE') || 'America/New_York';
 
 /** A variable set to an empty string is the same as unset, which is how an
  *  env var typed into a dashboard with no value arrives. */
