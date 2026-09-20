@@ -143,3 +143,14 @@ export function bless(postId: string): Promise<{ ok: true }> {
   return request<{ ok: true }>('/api/react', { method: 'POST', body: JSON.stringify({ postId }) });
 }
 
+
+export function sendSubscription(subscription: PushSubscription): Promise<{ ok: true }> {
+  return request<{ ok: true }>('/api/subscribe', {
+    method: 'POST',
+    body: JSON.stringify({ name: requireName(), subscription: subscription.toJSON() }),
+  });
+}
+
+export function dropSubscription(endpoint: string): Promise<{ ok: true }> {
+  return request<{ ok: true }>('/api/unsubscribe', { method: 'POST', body: JSON.stringify({ endpoint }) });
+}

@@ -2,6 +2,7 @@ import { calendarScreen } from './screens/calendar.js';
 import { captureScreen } from './screens/capture.js';
 import { feedScreen } from './screens/feed.js';
 import { onboardingScreen } from './screens/onboarding.js';
+import { remindersScreen } from './screens/reminders.js';
 import { welcomeScreen } from './screens/welcome.js';
 import { getProfile } from './state.js';
 import { isStandalone } from './platform.js';
@@ -38,6 +39,7 @@ startRouter({
     '/capture': captureScreen,
     '/feed': feedScreen,
     '/calendar': calendarScreen,
+    '/reminders': remindersScreen,
   },
   guard: (path) => {
     const hasProfile = !!getProfile();

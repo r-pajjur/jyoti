@@ -1,6 +1,8 @@
 import { delegate, el, esc } from '../dom.js';
 import { ApiError, bless, fetchFeed, type Post } from '../api.js';
-import { isBlessed, markBlessed, markPosted } from '../state.js';
+import { isBlessed, markBlessed, markPosted, remindersDismissed, dismissReminders } from '../state.js';
+import { pushStatus, setBadge } from '../platform.js';
+import { isSubscribed } from '../push.js';
 import { errorScreen, loadingScreen, softTime } from '../ui.js';
 import { go, mountInto } from '../router.js';
 
@@ -23,6 +25,22 @@ function postCard(post: Post): string {
         </div>
       </div>
     </article>`;
+}
+
+/** Shown until reminders are on, or until it is waved away once. */
+async function reminderInvite(): Promise<string> {
+  if (remindersDismissed()) return '';
+  const status = pushStatus();
+  if (status === 'unsupported' || status === 'denied') return '';
+  if (status === 'granted' && (await isSubscribed())) return '';
+  return `
+    <div class="card card-quiet invite" data-invite>
+      <p class="small">Would you like a quiet nudge each morning?</p>
+      <div class="invite-actions">
+        <a class="btn" href="#/reminders">Yes, remind me</a>
+        <button class="btn btn-ghost" data-dismiss>Not now</button>
+      </div>
+    </div>`;
 }
 
 export async function feedScreen(): Promise<HTMLElement> {
@@ -63,6 +81,7 @@ export async function feedScreen(): Promise<HTMLElement> {
 
     // Before you post: no prompt, no posts — only how many have gone before you.
     if (feed.locked) {
+      void setBadge(1);
       const dots = Array.from(
         { length: Math.max(feed.groupSize, feed.count) },
         (_, index) => `<span class="dot ${index < feed.count ? 'dot-full' : ''}"></span>`,
@@ -85,7 +104,9 @@ export async function feedScreen(): Promise<HTMLElement> {
     }
 
     markPosted(feed.day);
+    void setBadge(0);
     const withPhotos = feed.posts.filter((post) => post.photoUrl).length;
+    const invite = await reminderInvite();
     const view = el(`
       <div>
         <span class="eyebrow">Day ${feed.day}</span>
@@ -95,8 +116,14 @@ export async function feedScreen(): Promise<HTMLElement> {
           ${feed.posts.map(postCard).join('')}
         </div>
         <a class="btn btn-quiet" href="#/calendar">See the whole river</a>
+        ${invite}
       </div>
     `);
+
+    view.querySelector('[data-dismiss]')?.addEventListener('click', () => {
+      dismissReminders();
+      view.querySelector('[data-invite]')?.remove();
+    });
 
     delegate(view, '[data-bless]', 'click', async (button) => {
       const postId = button.dataset.bless;

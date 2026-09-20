@@ -20,6 +20,8 @@ import { writeDemoStubs } from './lib/stubs.mjs';
 const PORT = Number(process.env.PORT || 4000);
 
 process.env.REDIS_URL = 'redis://stub.invalid:6379';
+process.env.VAPID_PUBLIC_KEY = 'stub-public';
+process.env.VAPID_PRIVATE_KEY = 'stub-private';
 process.env.DHARA_TIMEZONE = 'UTC';
 process.env.DHARA_TOTAL_DAYS = '30';
 process.env.DHARA_SEND_HOUR = '8';
@@ -28,7 +30,7 @@ process.env.DHARA_SEND_HOUR = '8';
 process.env.DHARA_START_DATE = new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10);
 
 const dir = await mkdtemp(join(tmpdir(), 'dhara-demo-'));
-const names = ['today', 'feed', 'archive', 'post', 'react', 'health'];
+const names = ['today', 'feed', 'archive', 'post', 'react', 'health', 'subscribe', 'unsubscribe'];
 await esbuild.build({
   entryPoints: names.map((n) => `api/${n}.ts`),
   entryNames: '[name]',

@@ -15,6 +15,10 @@ import assert from 'node:assert/strict';
 import { writeDemoStubs } from './lib/stubs.mjs';
 
 process.env.REDIS_URL = 'redis://stub.invalid:6379';
+process.env.VAPID_PUBLIC_KEY = 'stub-public';
+process.env.VAPID_PRIVATE_KEY = 'stub-private';
+process.env.CRON_SECRET = 'test-secret';
+process.env.DHARA_SEND_HOUR = '0';
 process.env.DHARA_TIMEZONE = 'UTC';
 process.env.DHARA_TOTAL_DAYS = '30';
 process.env.DHARA_SEND_HOUR = '8';
@@ -52,7 +56,10 @@ async function call(handler, query = {}, body = undefined, method = 'GET', heade
 const dir = await mkdtemp(join(tmpdir(), 'dhara-'));
 try {
   await esbuild.build({
-    entryPoints: ['api/today.ts', 'api/feed.ts', 'api/archive.ts', 'api/post.ts', 'api/react.ts'],
+    entryPoints: [
+      'api/today.ts', 'api/feed.ts', 'api/archive.ts', 'api/post.ts', 'api/react.ts',
+      'api/subscribe.ts', 'api/cron/daily.ts',
+    ],
     entryNames: '[name]',
     alias: await writeDemoStubs(dir),
     outdir: dir,
@@ -68,6 +75,8 @@ try {
   const archiveHandler = (await import(join(dir, 'archive.mjs'))).default;
   const postHandler = (await import(join(dir, 'post.mjs'))).default;
   const reactHandler = (await import(join(dir, 'react.mjs'))).default;
+  const subscribeHandler = (await import(join(dir, 'subscribe.mjs'))).default;
+  const cronHandler = (await import(join(dir, 'daily.mjs'))).default;
 
   let passed = 0;
   const check = (label, fn) => {
@@ -213,6 +222,61 @@ try {
 
   const blessNothing = await call(reactHandler, {}, {}, 'POST');
   check('a blessing without a post id is rejected', () => assert.equal(blessNothing.statusCode, 400));
+
+  /* ── push and the morning cron ───────────────────────────────────────── */
+
+  const AUTH = { authorization: 'Bearer test-secret' };
+  const sub = (endpoint) => ({ endpoint, keys: { p256dh: 'k', auth: 'a' } });
+
+  const badSub = await call(subscribeHandler, {}, { name: 'Lakshmi', subscription: { endpoint: 'nope' } }, 'POST');
+  check('a malformed push subscription is rejected', () => assert.equal(badSub.statusCode, 400));
+
+  for (const [name, endpoint] of [
+    ['Lakshmi', 'https://push.example/one'],
+    ['Anjali', 'https://push.example/two'],
+    ['Stale', 'https://push.example/gone'],
+  ]) {
+    const saved = await call(subscribeHandler, {}, { name, subscription: sub(endpoint) }, 'POST');
+    assert.equal(saved.statusCode, 200);
+  }
+
+  const again = await call(
+    subscribeHandler, {}, { name: 'Lakshmi Renamed', subscription: sub('https://push.example/one') }, 'POST',
+  );
+  check('re-subscribing the same device updates the row instead of duplicating it', () => {
+    assert.equal(again.statusCode, 200);
+    assert.equal(Object.keys(globalThis.__redis.get('dhara:subscribers')).length, 3);
+  });
+
+  const unauthorized = await call(cronHandler, {}, undefined, 'GET', {});
+  check('the cron refuses an unauthenticated request', () => assert.equal(unauthorized.statusCode, 401));
+
+  const dry = await call(cronHandler, { dry: '1' }, undefined, 'GET', AUTH);
+  check('a dry run reports recipients and writes nothing', () => {
+    assert.equal(dry.payload.recipients, 3);
+    assert.match(dry.payload.payload.title, /Day 3/);
+    assert.equal(globalThis.__pushes?.length ?? 0, 0);
+  });
+
+  const first = await call(cronHandler, {}, undefined, 'GET', AUTH);
+  check('it pushes the day to everyone, and prunes a dead subscription', () => {
+    assert.equal(first.payload.sent, 2);
+    assert.equal(first.payload.failed, 1);
+    assert.equal(first.payload.pruned, 1);
+    assert.equal(Object.keys(globalThis.__redis.get('dhara:subscribers')).length, 2);
+  });
+
+  const repeat = await call(cronHandler, {}, undefined, 'GET', AUTH);
+  check('a second run the same day sends nothing', () => {
+    assert.equal(repeat.payload.skipped, 'already sent today');
+    assert.equal(globalThis.__pushes.length, 3);
+  });
+
+  const forced = await call(cronHandler, { force: '1' }, undefined, 'GET', AUTH);
+  check('force overrides the claim for a manual resend', () => {
+    assert.equal(forced.payload.sent, 2);
+    assert.equal(globalThis.__pushes.length, 5);
+  });
 
   console.log(`\n\x1b[32m${passed} checks passed\x1b[0m\n`);
 } finally {

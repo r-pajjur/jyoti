@@ -56,3 +56,13 @@ export function markBlessed(postId: string): void {
   if (!ids.includes(postId)) write(KEY_BLESSED, [...ids, postId]);
 }
 
+
+const KEY_REMINDERS = 'dhara.remindersDismissed';
+
+export function remindersDismissed(): boolean {
+  return read<boolean>(KEY_REMINDERS, false);
+}
+
+export function dismissReminders(): void {
+  write(KEY_REMINDERS, true);
+}

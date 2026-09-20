@@ -11,13 +11,16 @@
     "test": "node scripts/selftest.mjs && node scripts/prompts-check.mjs && node scripts/error-shapes.mjs && node scripts/redis-wire.mjs && node scripts/esm-check.mjs",
     "demo": "node build.mjs && node scripts/demo.mjs",
     "test:blob": "node scripts/test-blob.mjs",
-    "message": "node scripts/message.mjs"
+    "message": "node scripts/message.mjs",
+    "vapid": "node scripts/gen-vapid.mjs"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.0",
-    "redis": "^6.2.1"
+    "redis": "^6.2.1",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@types/web-push": "^3.6.4",
     "@vercel/node": "^5.1.14",
     "esbuild": "^0.24.2",
     "typescript": "^5.7.3"

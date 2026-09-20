@@ -16,6 +16,8 @@ import type { RedisClientType } from 'redis';
 
 const POSTS = 'dhara:posts';
 const BLESSINGS = 'dhara:blessings';
+const SUBSCRIBERS = 'dhara:subscribers';
+const CLAIM = 'dhara:sent:';
 
 export interface DharaPost {
   id: string;
@@ -126,6 +128,55 @@ export async function savePost(post: DharaPost): Promise<DharaPost> {
 
 export async function addBlessing(postId: string): Promise<void> {
   await (await redis()).hIncrBy(BLESSINGS, postId, 1);
+}
+
+export interface Subscriber {
+  /** The push endpoint doubles as the identity: one row per device. */
+  endpoint: string;
+  name: string;
+  subscription: unknown;
+  joinedAt: string;
+}
+
+export async function saveSubscriber(sub: Subscriber): Promise<void> {
+  await (await redis()).hSet(SUBSCRIBERS, sub.endpoint, JSON.stringify(sub));
+}
+
+export async function allSubscribers(): Promise<Subscriber[]> {
+  const rows = await (await redis()).hGetAll(SUBSCRIBERS);
+  return Object.values(rows ?? {})
+    .map((value) => {
+      try {
+        return JSON.parse(value as string) as Subscriber;
+      } catch {
+        return null;
+      }
+    })
+    .filter((sub): sub is Subscriber => !!sub?.endpoint);
+}
+
+export async function removeSubscriber(endpoint: string): Promise<void> {
+  await (await redis()).hDel(SUBSCRIBERS, endpoint);
+}
+
+export async function countSubscribers(): Promise<number> {
+  return (await redis()).hLen(SUBSCRIBERS);
+}
+
+/**
+ * Claims the day for sending. Returns false if it was already claimed, so a
+ * retried or double-fired cron cannot send the same morning twice.
+ */
+export async function claimSend(day: number): Promise<boolean> {
+  const result = await (await redis()).set(`${CLAIM}${day}`, new Date().toISOString(), {
+    NX: true,
+    EX: 60 * 60 * 36,
+  });
+  return result === 'OK';
+}
+
+export async function releaseSend(day: number): Promise<void> {
+  await (await redis()).del(`${CLAIM}${day}`);
 }
 
 /** Used by /api/health to prove the connection without writing anything. */

@@ -61,6 +61,13 @@ export function currentDay(now: Date = new Date()): number {
   return dayNumberFor(todayKey(now));
 }
 
+/** Local hour (0-23) the morning push goes out. Read per call, so changing it
+ *  in Vercel takes effect on the next tick rather than the next cold start. */
+export function sendHour(): number {
+  const raw = Number(setting('SEND_HOUR') || 8);
+  return Number.isFinite(raw) ? Math.min(Math.max(Math.trunc(raw), 0), 23) : 8;
+}
+
 /** The civil date on which a given day number falls. */
 export function dateKeyForDay(day: number): string {
   const ms = toUtcMidnight(START_DATE) + (day - 1) * 86_400_000;

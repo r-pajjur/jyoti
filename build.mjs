@@ -15,6 +15,8 @@ const options = {
   legalComments: 'none',
   define: {
     __BUILD_ID__: JSON.stringify(BUILD_ID),
+    // Safe to expose: the VAPID *public* key is meant to reach the browser.
+    __VAPID_PUBLIC_KEY__: JSON.stringify(process.env.PUBLIC_VAPID_PUBLIC_KEY || ''),
   },
 };
 

@@ -101,3 +101,51 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(staleWhileRevalidate(request));
 });
 
+/* ── Push ───────────────────────────────────────────────────────────────── */
+
+self.addEventListener('push', (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { body: event.data ? event.data.text() : '' };
+  }
+  const title = payload.title || '💧 Dhara';
+  const options = {
+    body: payload.body || "Today's invitation is waiting for you.",
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    tag: payload.tag || 'dhara-daily',
+    renotify: true,
+    data: { url: payload.url || '/#/feed' },
+  };
+  event.waitUntil(
+    (async () => {
+      // Always visible: a silent push costs us the subscription on iOS.
+      await self.registration.showNotification(title, options);
+      if ('setAppBadge' in self.navigator) {
+        try {
+          await self.navigator.setAppBadge(1);
+        } catch {
+          /* best effort */
+        }
+      }
+    })(),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = event.notification.data?.url || '/#/feed';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.navigate(target);
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(target);
+    }),
+  );
+});

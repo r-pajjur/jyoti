@@ -302,6 +302,11 @@ textarea { min-height: 140px; line-height: 1.5; resize: vertical; }
 }
 .thumbs .thumb-text { display: flex; align-items: center; padding: 9px; font-size: 12px; line-height: 1.35; color: var(--ink-soft); overflow: hidden; }
 
+.invite { margin-top: 22px; text-align: center; }
+.invite p { margin-bottom: 12px; }
+.invite-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.invite-actions .btn { flex: 1; min-width: 140px; margin-top: 0; }
+
 /* ── Onboarding ─────────────────────────────────────────────────────────── */
 
 .steps { list-style: none; counter-reset: step; margin: 0; padding: 0; }

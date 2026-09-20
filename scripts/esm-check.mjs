@@ -13,7 +13,8 @@ import { rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const OUT = join(process.cwd(), '.esmcheck');
-const HANDLERS = ['today', 'feed', 'archive', 'post', 'react', 'health', 'photo'];
+const HANDLERS = ['today', 'feed', 'archive', 'post', 'react', 'health', 'photo',
+                  'subscribe', 'unsubscribe', 'cron/daily'];
 
 await rm(OUT, { recursive: true, force: true });
 try {
