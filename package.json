@@ -10,7 +10,8 @@
     "icons": "node scripts/gen-icons.mjs",
     "test": "node scripts/selftest.mjs && node scripts/prompts-check.mjs && node scripts/error-shapes.mjs && node scripts/redis-wire.mjs && node scripts/esm-check.mjs",
     "demo": "node build.mjs && node scripts/demo.mjs",
-    "test:blob": "node scripts/test-blob.mjs"
+    "test:blob": "node scripts/test-blob.mjs",
+    "message": "node scripts/message.mjs"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.0",

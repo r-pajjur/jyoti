@@ -61,6 +61,21 @@ a **Redis** database (any Marketplace provider) and a **Blob** store. Both
 inject their own credentials — there are no API keys to copy by hand. A new
 deployment is required before injected variables take effect.
 
+## Sending the morning message
+
+There is no push. The daily nudge goes out by hand over WhatsApp, and this
+prints it ready to copy:
+
+```bash
+npm run message                 # today's prompt
+npm run message -- --day 7      # a specific day, to write ahead
+npm run message -- --install    # the join-and-install message
+npm run message -- --all        # the whole month, to review at once
+```
+
+It reads the same prompts and start date the app does, so the day number in
+the message can never disagree with the day number on someone's phone.
+
 ## When something is wrong on the deployment
 
 `GET /api/health` reports which credentials the running deployment can see and
