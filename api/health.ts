@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { currentDay, GROUP_SIZE, isConfigured, ritualConfig, TOTAL_DAYS } from './_lib/day.js';
+import { list } from '@vercel/blob';
 import { allPosts, pingStore, storageVarNames } from './_lib/store.js';
 import { requireMethod } from './_lib/http.js';
 
@@ -12,6 +13,16 @@ import { requireMethod } from './_lib/http.js';
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!requireMethod(req, res, 'GET')) return;
 
+  // Probes are raced against a deadline shorter than the function's timeout,
+  // so a hanging dependency still yields a report.
+  const deadline = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+    Promise.race([
+      promise,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`timed out after ${ms}ms`)), ms).unref?.(),
+      ),
+    ]);
+
   // Which build is actually serving? Vercel injects these at build time.
   const build = {
     commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
@@ -23,11 +34,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Effective values — what the app actually uses — not the raw variables. A
   // variable present but empty reads as unset, which is otherwise invisible.
   const config = ritualConfig();
-  const blobToken = (process.env.BLOB_READ_WRITE_TOKEN || '').trim();
   const env = {
     redis: !!(process.env.REDIS_URL || process.env.KV_URL),
-    blob: blobToken.length > 0,
-    blobTokenPresentButEmpty: 'BLOB_READ_WRITE_TOKEN' in process.env && blobToken.length === 0,
     startDate: config.startDate,
     startDateVar: process.env.DHARA_START_DATE ? 'DHARA_START_DATE'
       : process.env.JYOTI_START_DATE ? 'JYOTI_START_DATE' : null,
@@ -40,15 +48,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Names only, never values: which storage variables does this deployment see?
   const seen = storageVarNames();
 
-  // The env report must survive a store that hangs, so the probe is raced
-  // against a deadline shorter than the function's own timeout.
-  const deadline = <T>(promise: Promise<T>, ms: number): Promise<T> =>
-    Promise.race([
-      promise,
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(`timed out after ${ms}ms`)), ms).unref?.(),
-      ),
-    ]);
+  // Ask Blob whether it works rather than inferring it from a variable: on
+  // Vercel the SDK can authenticate through the linked store without
+  // BLOB_READ_WRITE_TOKEN ever being set, so the variable proves nothing.
+  let blob: { ok: boolean; error?: string };
+  try {
+    await deadline(list({ limit: 1 }), 6000);
+    blob = { ok: true };
+  } catch (error) {
+    blob = { ok: false, error: error instanceof Error ? error.message : 'unknown' };
+  }
 
   let store: { ok: boolean; ping?: string; posts?: number; error?: string };
   try {
@@ -58,6 +67,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     store = { ok: false, error: error instanceof Error ? error.message : 'unknown' };
   }
 
-  const ok = env.redis && env.blob && env.startDateConfigured && store.ok;
-  res.status(ok ? 200 : 503).json({ ok, build, day: currentDay(), env, seen, store });
+  const ok = env.startDateConfigured && store.ok && blob.ok;
+  res.status(ok ? 200 : 503).json({ ok, build, day: currentDay(), env, seen, store, blob });
 }

@@ -45,7 +45,22 @@ globalThis.__blobs ??= new Map();
 export async function put(key, bytes, opts) {
   const id = key.replace(/[^a-zA-Z0-9.-]+/g, '-') + '-' + globalThis.__blobs.size;
   globalThis.__blobs.set(id, { bytes, contentType: opts?.contentType || 'image/jpeg' });
-  return { url: (globalThis.__demoOrigin || 'http://localhost:4000') + '/demo-blob/' + id };
+  return {
+    url: (globalThis.__demoOrigin || 'http://localhost:4000') + '/demo-blob/' + id,
+    pathname: id,
+  };
+}
+export async function list({ limit = 1000 } = {}) {
+  return { blobs: [...globalThis.__blobs.keys()].slice(0, limit).map((pathname) => ({ pathname })) };
+}
+export async function get(pathname) {
+  const blob = globalThis.__blobs.get(pathname);
+  if (!blob) return null;
+  return {
+    statusCode: 200,
+    headers: new Headers({ 'content-type': blob.contentType }),
+    stream: new Blob([blob.bytes]).stream(),
+  };
 }
 `;
 

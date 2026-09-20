@@ -1,4 +1,4 @@
-/** Renders the Dhara drop icon procedurally — no design tooling, no binary assets. */
+/** Renders the Dhara drop procedurally — no design tooling, no binary assets. */
 
 const clamp = (x, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
 const mix = (a, b, t) => a + (b - a) * clamp(t);
@@ -13,12 +13,12 @@ const hex = (value) => [
 ];
 const mixColor = (a, b, t) => [mix(a[0], b[0], t), mix(a[1], b[1], t), mix(a[2], b[2], t)];
 
-/* The lifeseva palette: sandalwood ground, saffron body, ochre depth. */
-const CHANDAN = hex('#FDF8EE');
-const CHANDAN_DEEP = hex('#F4E9D4');
-const SAFFRON = hex('#D9741A');
-const OCHRE = hex('#8F4E0A');
-const HIGHLIGHT = hex('#FFE0B0');
+/* River water: pale ground, clear blue body, deep current below. */
+const GROUND = hex('#F2F8FB');
+const GROUND_DEEP = hex('#DEEDF5');
+const WATER = hex('#2E86B0');
+const DEEP = hex('#0E4C6B');
+const HIGHLIGHT = hex('#CDEAF7');
 
 const TOP = 0.115;
 const CY = 0.625;
@@ -43,22 +43,22 @@ function shade(u, v, background) {
   const d = dropField(u, v);
   const edge = 0.004;
 
-  let color = background ? mixColor(CHANDAN, CHANDAN_DEEP, smoothstep(0, 1, v)) : [0, 0, 0];
+  let color = background ? mixColor(GROUND, GROUND_DEEP, smoothstep(0, 1, v)) : [0, 0, 0];
   let alpha = background ? 1 : 0;
 
   // A soft warm halo under the drop, so it sits on the ground rather than floating.
   if (background) {
     const glow = 1 - smoothstep(0, 0.34, Math.hypot((u - 0.5) / 1.15, (v - 0.58) / 1.0));
-    color = mixColor(color, SAFFRON, glow * 0.14);
+    color = mixColor(color, WATER, glow * 0.12);
   }
 
   const inside = 1 - smoothstep(-edge, edge, d);
   if (inside > 0) {
     // Vertical body gradient, lit from the upper left.
     const depth = clamp((v - TOP) / (CY + R - TOP));
-    let body = mixColor(SAFFRON, OCHRE, smoothstep(0.35, 1, depth));
+    let body = mixColor(WATER, DEEP, smoothstep(0.35, 1, depth));
     const lit = 1 - smoothstep(0, 0.2, Math.hypot(u - 0.41, v - 0.46));
-    body = mixColor(body, HIGHLIGHT, lit * 0.75);
+    body = mixColor(body, HIGHLIGHT, lit * 0.8);
     color = background ? mixColor(color, body, inside) : body;
     alpha = Math.max(alpha, inside);
   }

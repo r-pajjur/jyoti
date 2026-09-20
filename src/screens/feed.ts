@@ -45,7 +45,7 @@ export async function feedScreen(): Promise<HTMLElement> {
         host,
         el(`
           <div class="locked card">
-            <div class="drop drop-unlit"></div>
+            <div class="drop drop-still"></div>
             <h2>${waiting ? 'Not yet' : 'The river has run'}</h2>
             <p class="muted">${
               waiting
@@ -65,13 +65,13 @@ export async function feedScreen(): Promise<HTMLElement> {
     if (feed.locked) {
       const dots = Array.from(
         { length: Math.max(feed.groupSize, feed.count) },
-        (_, index) => `<span class="dot ${index < feed.count ? 'dot-lit' : ''}"></span>`,
+        (_, index) => `<span class="dot ${index < feed.count ? 'dot-full' : ''}"></span>`,
       ).join('');
       mountInto(
         host,
         el(`
           <div class="locked card">
-            <div class="drop drop-unlit"></div>
+            <div class="drop drop-still"></div>
             <span class="eyebrow">Day ${feed.day}</span>
             <p class="count">${feed.count}/${feed.groupSize}</p>
             <h2>drops in the river today</h2>

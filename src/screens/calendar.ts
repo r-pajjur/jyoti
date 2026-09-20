@@ -10,11 +10,11 @@ function thumb(post: Post): string {
   return `<div class="thumb-text">${esc(post.body.slice(0, 120))}</div>`;
 }
 
-/** One square in the month grid. A lit day shows a photo behind the number. */
+/** One square in the month grid. A day with drops shows a photo behind the number. */
 function cell(entry: ArchiveDay, today: number, selected: number): string {
   const cover = entry.posts.find((post) => post.photoUrl)?.photoUrl;
-  const lit = entry.posts.length > 0 && !entry.locked;
-  const classes = ['cell', lit ? 'lit' : '', entry.day === today ? 'today' : '', entry.day > today ? 'empty' : '']
+  const full = entry.posts.length > 0 && !entry.locked;
+  const classes = ['cell', full ? 'full' : '', entry.day === today ? 'today' : '', entry.day > today ? 'empty' : '']
     .filter(Boolean)
     .join(' ');
 
@@ -40,7 +40,7 @@ export async function calendarScreen(): Promise<HTMLElement> {
         host,
         el(`
           <div class="locked card">
-            <div class="drop drop-unlit"></div>
+            <div class="drop drop-still"></div>
             <h2>The river is still</h2>
             <p class="muted">Add your drop for today and the whole month opens — every day the group has gathered so far.</p>
             <a class="btn" href="#/capture">Add your drop to the river</a>
