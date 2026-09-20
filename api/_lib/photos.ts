@@ -54,7 +54,7 @@ let storeAccess: 'public' | 'private' | null = null;
  * private one, which streams it back with the server-side token.
  */
 export async function uploadPhoto(photo: DecodedPhoto, name: string, day: number): Promise<string> {
-  const key = `jyoti/day-${String(day).padStart(2, '0')}/${slug(name)}-${Date.now()}.${extensionFor(photo.contentType)}`;
+  const key = `dhara/day-${String(day).padStart(2, '0')}/${slug(name)}-${Date.now()}.${extensionFor(photo.contentType)}`;
   const options = {
     contentType: photo.contentType,
     addRandomSuffix: true,

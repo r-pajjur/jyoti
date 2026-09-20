@@ -1,8 +1,8 @@
 /**
  * The whole database: two Redis hashes.
  *
- *   jyoti:posts      postId → the post
- *   jyoti:blessings  postId → how many hearts it has
+ *   dhara:posts      postId → the post
+ *   dhara:blessings  postId → how many hearts it has
  *
  * At ~25 people over 30 days this tops out around 750 small rows, so the
  * archive reads every post in one round trip and filters in memory. No schema,
@@ -14,10 +14,10 @@
 
 import type { RedisClientType } from 'redis';
 
-const POSTS = 'jyoti:posts';
-const BLESSINGS = 'jyoti:blessings';
+const POSTS = 'dhara:posts';
+const BLESSINGS = 'dhara:blessings';
 
-export interface JyotiPost {
+export interface DharaPost {
   id: string;
   day: number;
   /** As typed, for display. */
@@ -91,35 +91,35 @@ async function redis(): Promise<RedisClientType> {
     });
     // Without a listener, a connection error is thrown as an unhandled event
     // and takes the whole function down instead of failing this one request.
-    client.on('error', (error) => console.error('[jyoti] redis', error?.message ?? error));
+    client.on('error', (error) => console.error('[dhara] redis', error?.message ?? error));
   }
   if (!client.isOpen) await client.connect();
   return client;
 }
 
-function revive(value: unknown): JyotiPost | null {
+function revive(value: unknown): DharaPost | null {
   if (typeof value !== 'string') return null;
   try {
-    const post = JSON.parse(value) as JyotiPost;
+    const post = JSON.parse(value) as DharaPost;
     return post && typeof post.day === 'number' ? post : null;
   } catch {
     return null;
   }
 }
 
-export async function allPosts(): Promise<JyotiPost[]> {
+export async function allPosts(): Promise<DharaPost[]> {
   const rows = await (await redis()).hGetAll(POSTS);
   return Object.values(rows ?? {})
     .map(revive)
-    .filter((post): post is JyotiPost => post !== null)
+    .filter((post): post is DharaPost => post !== null)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
-export async function postsForDay(day: number): Promise<JyotiPost[]> {
+export async function postsForDay(day: number): Promise<DharaPost[]> {
   return (await allPosts()).filter((post) => post.day === day);
 }
 
-export async function savePost(post: JyotiPost): Promise<JyotiPost> {
+export async function savePost(post: DharaPost): Promise<DharaPost> {
   await (await redis()).hSet(POSTS, post.id, JSON.stringify(post));
   return post;
 }

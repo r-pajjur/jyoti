@@ -11,7 +11,7 @@ export function requireMethod(req: VercelRequest, res: VercelResponse, method: s
   return false;
 }
 
-/** Names are the only identity in Jyoti, so compare them forgivingly. */
+/** Names are the only identity in Dhara, so compare them forgivingly. */
 export function normalizeName(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, ' ');
 }
@@ -24,7 +24,7 @@ export function readName(req: VercelRequest): string | null {
 
 export function handleError(res: VercelResponse, error: unknown) {
   const message = error instanceof Error ? error.message : 'Unexpected error';
-  console.error('[jyoti]', error);
+  console.error('[dhara]', error);
   const status = /Missing required environment variable/.test(message) ? 500 : 502;
   fail(res, status, message);
 }

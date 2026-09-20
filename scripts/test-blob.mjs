@@ -19,7 +19,7 @@ if (!process.env.BLOB_READ_WRITE_TOKEN) {
 const PNG_B64 =
   'iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADveWkH6oAAAAAElFTkSuQmCC';
 
-const dir = await mkdtemp(join(process.cwd(), 'node_modules', '.jyoti-blob-'));
+const dir = await mkdtemp(join(process.cwd(), 'node_modules', '.dhara-blob-'));
 try {
   await esbuild.build({
     entryPoints: ['api/_lib/photos.ts'],

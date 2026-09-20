@@ -10,7 +10,7 @@ export function onboardingScreen(): HTMLElement {
     <div>
       <div class="center">
         <div class="drop"></div>
-        <span class="eyebrow">Jyoti · ज्योति</span>
+        <span class="eyebrow">Dhara · धारा</span>
         <h1>What shall we call you?</h1>
         <p class="muted">This is the name the group will see beside your drop. Your first name is plenty.</p>
       </div>

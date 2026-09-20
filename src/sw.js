@@ -1,7 +1,7 @@
-/* Jyoti service worker — build __BUILD_ID__ */
+/* Dhara service worker — build __BUILD_ID__ */
 const BUILD = '__BUILD_ID__';
-const SHELL_CACHE = `jyoti-shell-${BUILD}`;
-const MEDIA_CACHE = 'jyoti-media-v1';
+const SHELL_CACHE = `dhara-shell-${BUILD}`;
+const MEDIA_CACHE = 'dhara-media-v1';
 const MEDIA_LIMIT = 240;
 
 const SHELL = [
@@ -26,7 +26,7 @@ self.addEventListener('activate', (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((key) => key.startsWith('jyoti-shell-') && key !== SHELL_CACHE).map((key) => caches.delete(key))),
+        Promise.all(keys.filter((key) => key.startsWith('dhara-shell-') && key !== SHELL_CACHE).map((key) => caches.delete(key))),
       )
       .then(() => self.clients.claim()),
   );

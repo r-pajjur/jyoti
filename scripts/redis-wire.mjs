@@ -15,7 +15,7 @@ const server = await startFakeRedis(PORT);
 process.env.REDIS_URL = `redis://127.0.0.1:${PORT}`;
 
 // Inside the project, so the externalised `redis` package still resolves.
-const dir = await mkdtemp(join(process.cwd(), 'node_modules', '.jyoti-wire-'));
+const dir = await mkdtemp(join(process.cwd(), 'node_modules', '.dhara-wire-'));
 try {
   await esbuild.build({
     entryPoints: ['api/_lib/store.ts'],

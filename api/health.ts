@@ -29,6 +29,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     blob: blobToken.length > 0,
     blobTokenPresentButEmpty: 'BLOB_READ_WRITE_TOKEN' in process.env && blobToken.length === 0,
     startDate: config.startDate,
+    startDateVar: process.env.DHARA_START_DATE ? 'DHARA_START_DATE'
+      : process.env.JYOTI_START_DATE ? 'JYOTI_START_DATE' : null,
     startDateConfigured: isConfigured(),
     timezone: config.timezone,
     groupSize: GROUP_SIZE,

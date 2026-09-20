@@ -1,13 +1,23 @@
 /** Day-number arithmetic in the group's own timezone, not the server's. */
 
-export const TOTAL_DAYS = Number(process.env.JYOTI_TOTAL_DAYS || 30);
+/**
+ * Settings are read under DHARA_* and, failing that, JYOTI_* — the name the
+ * app shipped under. Keeping both means a rename never silently unconfigures
+ * a deployment whose variables were set before it.
+ */
+function setting(name: string): string {
+  return (process.env[`DHARA_${name}`] ?? process.env[`JYOTI_${name}`] ?? '').trim();
+}
+
+
+export const TOTAL_DAYS = Number(setting('TOTAL_DAYS') || 30);
 /** How many people are in the group — the denominator in "3/20 drops today". */
-export const GROUP_SIZE = Number(process.env.JYOTI_GROUP_SIZE || 20);
-const TIMEZONE = process.env.JYOTI_TIMEZONE || 'Asia/Kolkata';
+export const GROUP_SIZE = Number(setting('GROUP_SIZE') || 20);
+const TIMEZONE = setting('TIMEZONE') || 'Asia/Kolkata';
 
 /** A variable set to an empty string is the same as unset, which is how an
  *  env var typed into a dashboard with no value arrives. */
-const CONFIGURED_START = (process.env.JYOTI_START_DATE || '').trim();
+const CONFIGURED_START = setting('START_DATE');
 const START_DATE = /^\d{4}-\d{2}-\d{2}$/.test(CONFIGURED_START) ? CONFIGURED_START : '';
 
 /** True only when a usable start date was supplied. */

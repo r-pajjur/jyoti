@@ -15,14 +15,14 @@ import assert from 'node:assert/strict';
 import { writeDemoStubs } from './lib/stubs.mjs';
 
 process.env.REDIS_URL = 'redis://stub.invalid:6379';
-process.env.JYOTI_TIMEZONE = 'UTC';
-process.env.JYOTI_TOTAL_DAYS = '30';
-process.env.JYOTI_SEND_HOUR = '8';
+process.env.DHARA_TIMEZONE = 'UTC';
+process.env.DHARA_TOTAL_DAYS = '30';
+process.env.DHARA_SEND_HOUR = '8';
 
 // Pin "today" to day 3 of the ritual.
 const today = new Date();
 const start = new Date(today.getTime() - 2 * 86_400_000);
-process.env.JYOTI_START_DATE = start.toISOString().slice(0, 10);
+process.env.DHARA_START_DATE = start.toISOString().slice(0, 10);
 
 globalThis.__demoOrigin = 'https://blob.test';
 
@@ -49,7 +49,7 @@ async function call(handler, query = {}, body = undefined, method = 'GET', heade
   return res;
 }
 
-const dir = await mkdtemp(join(tmpdir(), 'jyoti-'));
+const dir = await mkdtemp(join(tmpdir(), 'dhara-'));
 try {
   await esbuild.build({
     entryPoints: ['api/today.ts', 'api/feed.ts', 'api/archive.ts', 'api/post.ts', 'api/react.ts'],
@@ -93,8 +93,10 @@ try {
     assert.equal(t.statusCode, 200);
     assert.equal(t.payload.day, 3);
     assert.equal(t.payload.phase, 'during');
-    assert.equal(t.payload.prompt.type, 'photo');
-    assert.match(t.payload.prompt.text, /green/i);
+    // Structure, not wording — the prompts are edited often.
+    assert.ok(['photo', 'reflection'].includes(t.payload.prompt.type));
+    assert.ok(t.payload.prompt.text.length > 10);
+    assert.ok(t.payload.prompt.title.length > 0);
   });
 
   const locked = await call(feedHandler, { name: 'Priya' });
@@ -152,8 +154,8 @@ try {
 
   /* Before Day 1 the feed must say so, and offer nothing to post. */
   {
-    const realStart = process.env.JYOTI_START_DATE;
-    process.env.JYOTI_START_DATE = new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10);
+    const realStart = process.env.DHARA_START_DATE;
+    process.env.DHARA_START_DATE = new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10);
     const early = await call(
       (await import(join(dir, `feed.mjs?before=${Date.now()}`))).default,
       { name: 'Priya' },
@@ -165,7 +167,7 @@ try {
       assert.equal(early.payload.count, 0);
       assert.deepEqual(early.payload.posts, []);
     });
-    process.env.JYOTI_START_DATE = realStart;
+    process.env.DHARA_START_DATE = realStart;
   }
 
   const missing = await call(feedHandler, {});
@@ -206,7 +208,7 @@ try {
   const blessed = await call(reactHandler, {}, { postId: written.payload.post.id }, 'POST');
   check('a blessing is recorded', () => {
     assert.equal(blessed.statusCode, 200);
-    assert.equal(globalThis.__redis.get('jyoti:blessings')[written.payload.post.id], 1);
+    assert.equal(globalThis.__redis.get('dhara:blessings')[written.payload.post.id], 1);
   });
 
   const blessNothing = await call(reactHandler, {}, {}, 'POST');

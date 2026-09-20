@@ -3,9 +3,9 @@ export interface Profile {
   joinedAt: string;
 }
 
-const KEY_PROFILE = 'jyoti.profile';
-const KEY_POSTED = 'jyoti.posted';
-const KEY_BLESSED = 'jyoti.blessed';
+const KEY_PROFILE = 'dhara.profile';
+const KEY_POSTED = 'dhara.posted';
+const KEY_BLESSED = 'dhara.blessed';
 
 function read<T>(key: string, fallback: T): T {
   try {

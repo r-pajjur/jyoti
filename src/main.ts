@@ -23,7 +23,7 @@ async function registerServiceWorker(): Promise<void> {
       location.reload();
     });
   } catch (error) {
-    console.warn('[jyoti] service worker not registered', error);
+    console.warn('[dhara] service worker not registered', error);
   }
 }
 

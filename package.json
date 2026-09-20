@@ -1,5 +1,5 @@
 {
-  "name": "jyoti",
+  "name": "dhara",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -8,7 +8,7 @@
     "watch": "node build.mjs --watch",
     "dev": "vercel dev",
     "icons": "node scripts/gen-icons.mjs",
-    "test": "node scripts/selftest.mjs && node scripts/error-shapes.mjs && node scripts/redis-wire.mjs && node scripts/esm-check.mjs",
+    "test": "node scripts/selftest.mjs && node scripts/prompts-check.mjs && node scripts/error-shapes.mjs && node scripts/redis-wire.mjs && node scripts/esm-check.mjs",
     "demo": "node build.mjs && node scripts/demo.mjs",
     "test:blob": "node scripts/test-blob.mjs"
   },

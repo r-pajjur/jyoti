@@ -34,7 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.end();
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected error';
-    console.error('[jyoti] photo', message);
+    console.error('[dhara] photo', message);
     fail(res, /not found/i.test(message) ? 404 : 502, message);
   }
 }

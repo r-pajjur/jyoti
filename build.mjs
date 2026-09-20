@@ -27,9 +27,9 @@ if (dev) {
   const ctx = await esbuild.context(options);
   await ctx.watch();
   await buildServiceWorker();
-  console.log(`[jyoti] watching — build ${BUILD_ID}`);
+  console.log(`[dhara] watching — build ${BUILD_ID}`);
 } else {
   await esbuild.build(options);
   await buildServiceWorker();
-  console.log(`[jyoti] built ${BUILD_ID}`);
+  console.log(`[dhara] built ${BUILD_ID}`);
 }

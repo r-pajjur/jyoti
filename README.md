@@ -1,4 +1,4 @@
-# Jyoti 💧
+# Dhara 💧
 
 A 30-day post-yatra ritual PWA. One gentle prompt each morning; posting a photo
 or a reflection unlocks that day's shared feed. Built for ~25 non-technical
@@ -15,7 +15,7 @@ users on iPhone Safari.
 
 There is no push, no cron, and no subscriber database: the daily nudge goes out
 by hand over WhatsApp. The app simply shows whichever day it is, counting
-forward from `JYOTI_START_DATE`.
+forward from `DHARA_START_DATE`.
 
 ## One screen, then the river
 
@@ -32,7 +32,7 @@ score.
 have added today's drop. Tap any past day to see what the group gathered. It is
 the group's thread, not yours; there is no private view.
 
-Set the group size with `JYOTI_GROUP_SIZE` (default 20).
+Set the group size with `DHARA_GROUP_SIZE` (default 20).
 
 ## Try it with no credentials
 
@@ -48,7 +48,7 @@ gate is visible immediately.
 ## Setup for real
 
 ```bash
-cp .env.example .env          # set JYOTI_START_DATE and JYOTI_GROUP_SIZE
+cp .env.example .env          # set DHARA_START_DATE and DHARA_GROUP_SIZE
 vercel link                   # connect the project
 vercel env pull .env          # pulls KV and Blob credentials once both are connected
 npm test                      # offline checks: handlers, error rendering, Redis wire

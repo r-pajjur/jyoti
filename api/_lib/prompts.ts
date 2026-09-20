@@ -59,7 +59,7 @@ export const PROMPTS: Prompt[] = [
   { day: 25, type: 'photo', title: 'Almost missed',
     text: 'Something you almost walked past, then noticed. Why do you think it caught you?' },
   { day: 26, type: 'photo', title: 'What evening brings up',
-    text: 'Evening light, wherever it finds you. What does this hour tend to bring up in you?' },
+    text: 'The evening, wherever it finds you. What does this hour tend to bring up in you?' },
   { day: 27, type: 'reflection', title: "What you'll keep",
     text: 'What do you want to keep doing once these thirty days are over?' },
   { day: 28, type: 'photo', title: 'A face you love',
@@ -67,7 +67,7 @@ export const PROMPTS: Prompt[] = [
   { day: 29, type: 'photo', title: 'The same frame',
     text: "Your altar again — the same frame as Day 2, if you can manage it. What has shifted, in the corner and in you?" },
   { day: 30, type: 'reflection', title: 'Thirty drops',
-    text: 'Thirty days of drops. Walk back through the whole gallery slowly first. Then tell us — what did this month light up in you?' },
+    text: 'Thirty days of flow. Walk back through the whole gallery slowly first. Then tell us — what did this month stir in you?' },
 ];
 
 export function promptForDay(day: number): Prompt | null {

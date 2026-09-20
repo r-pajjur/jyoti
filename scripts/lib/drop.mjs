@@ -1,4 +1,4 @@
-/** Renders the Jyoti drop icon procedurally — no design tooling, no binary assets. */
+/** Renders the Dhara drop icon procedurally — no design tooling, no binary assets. */
 
 const clamp = (x, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
 const mix = (a, b, t) => a + (b - a) * clamp(t);

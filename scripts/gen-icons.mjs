@@ -16,5 +16,5 @@ await mkdir('public/icons', { recursive: true });
 for (const target of TARGETS) {
   const pixels = renderDrop(target.size, { scale: target.scale, background: target.background !== false });
   await writeFile(`public/icons/${target.file}`, encodePNG(target.size, target.size, pixels));
-  console.log(`[jyoti] icons/${target.file}`);
+  console.log(`[dhara] icons/${target.file}`);
 }

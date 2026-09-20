@@ -20,14 +20,14 @@ import { writeDemoStubs } from './lib/stubs.mjs';
 const PORT = Number(process.env.PORT || 4000);
 
 process.env.REDIS_URL = 'redis://stub.invalid:6379';
-process.env.JYOTI_TIMEZONE = 'UTC';
-process.env.JYOTI_TOTAL_DAYS = '30';
-process.env.JYOTI_SEND_HOUR = '8';
+process.env.DHARA_TIMEZONE = 'UTC';
+process.env.DHARA_TOTAL_DAYS = '30';
+process.env.DHARA_SEND_HOUR = '8';
 
 // Pin the demo to Day 3, so there is already an archive behind you.
-process.env.JYOTI_START_DATE = new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10);
+process.env.DHARA_START_DATE = new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10);
 
-const dir = await mkdtemp(join(tmpdir(), 'jyoti-demo-'));
+const dir = await mkdtemp(join(tmpdir(), 'dhara-demo-'));
 const names = ['today', 'feed', 'archive', 'post', 'react', 'health'];
 await esbuild.build({
   entryPoints: names.map((n) => `api/${n}.ts`),
@@ -59,7 +59,7 @@ await seed('Lakshmi', 1, 'I carried back the quiet of the river at dawn.');
 await seed('Meera Nair', 1, 'A stillness I did not have before.');
 await seed('Anjali', 2, 'My small corner, swept and lit.');
 await seed('Lakshmi', 2, 'Marigolds from the balcony today.');
-await seed('Anjali', 3, 'The light through the kitchen window at 6am.');
+await seed('Anjali', 3, 'The rain on the kitchen window at 6am.');
 await seed('Meera Nair', 3, 'My mother on the phone, laughing.');
 
 const TYPES = {
@@ -146,7 +146,7 @@ const lan = Object.values(networkInterfaces())
   .find((i) => i && i.family === 'IPv4' && !i.internal)?.address;
 
 server.listen(PORT, () => {
-  console.log(`\n💧 Jyoti demo — Day 3 of 30, in-memory storage, no keys needed`);
+  console.log(`\n💧 Dhara demo — Day 3 of 30, in-memory storage, no keys needed`);
   console.log(`   laptop  http://localhost:${PORT}`);
   if (lan) console.log(`   phone   http://${lan}:${PORT}   (screens only — install needs https)`);
   console.log(`\n   Seeded: 2 past days, and 2 other people have already posted today.`);

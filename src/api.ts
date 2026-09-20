@@ -114,7 +114,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 function requireName(): string {
   const name = getProfile()?.name;
-  if (!name) throw new ApiError('We lost your name. Please reopen Jyoti and enter it again.');
+  if (!name) throw new ApiError('We lost your name. Please reopen Dhara and enter it again.');
   return name;
 }
 
