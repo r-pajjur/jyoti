@@ -64,7 +64,9 @@ export function currentDay(now: Date = new Date()): number {
 /** Local hour (0-23) the morning push goes out. Read per call, so changing it
  *  in Vercel takes effect on the next tick rather than the next cold start. */
 export function sendHour(): number {
-  const raw = Number(setting('SEND_HOUR') || 8);
+  // Defaults to 0 so a once-a-day cron is itself the gate. Raise it only on a
+  // plan with hourly crons, where the job runs often and must wait for a time.
+  const raw = Number(setting('SEND_HOUR') || 0);
   return Number.isFinite(raw) ? Math.min(Math.max(Math.trunc(raw), 0), 23) : 8;
 }
 
