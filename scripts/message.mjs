@@ -20,20 +20,23 @@ const value = (name) => {
 };
 
 const URL_BASE = (value('url') ?? process.env.DHARA_URL ?? 'https://dhara-cmn.vercel.app').replace(/\/+$/, '');
-const START = process.env.DHARA_START_DATE ?? process.env.JYOTI_START_DATE ?? '2026-09-20';
-const TIMEZONE = process.env.DHARA_TIMEZONE ?? process.env.JYOTI_TIMEZONE ?? 'America/New_York';
+/**
+ * The day number comes from the deployment itself. Computing it here from a
+ * local copy of the start date and timezone is how the message and the app
+ * ended up disagreeing.
+ */
+async function liveDay() {
+  const res = await fetch(`${URL_BASE}/api/today`);
+  if (!res.ok) throw new Error(`/api/today answered ${res.status}`);
+  const body = await res.json();
+  return { day: body.day, timezone: body.timezone, startDate: body.startDate };
+}
 
 const bundle = await esbuild.build({
   entryPoints: ['api/_lib/prompts.ts'],
   bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
 });
 const { PROMPTS } = await import(`data:text/javascript,${encodeURIComponent(bundle.outputFiles[0].text)}`);
-
-function todayNumber() {
-  const here = new Intl.DateTimeFormat('en-CA', { timeZone: TIMEZONE }).format(new Date());
-  const days = (Date.parse(`${here}T00:00:00Z`) - Date.parse(`${START}T00:00:00Z`)) / 86_400_000;
-  return Math.floor(days) + 1;
-}
 
 function dailyMessage(day) {
   const prompt = PROMPTS.find((p) => p.day === day);
@@ -87,7 +90,16 @@ if (flag('install')) {
   }
   console.log(line + '\n');
 } else {
-  const day = Number(value('day') ?? todayNumber());
+  let live = null;
+  if (!value('day')) {
+    try {
+      live = await liveDay();
+    } catch (error) {
+      console.error(`Could not reach ${URL_BASE}: ${error.message}`);
+      process.exit(1);
+    }
+  }
+  const day = Number(value('day') ?? live.day);
   const message = dailyMessage(day);
   if (!message) {
     console.error(
@@ -98,5 +110,5 @@ if (flag('install')) {
     process.exit(1);
   }
   console.log(`\n${line}\n${message}\n${line}\n`);
-  if (!value('day')) console.log(`(today, ${TIMEZONE})\n`);
+  if (live) console.log(`(day ${live.day} on the live app — start ${live.startDate}, ${live.timezone})\n`);
 }
