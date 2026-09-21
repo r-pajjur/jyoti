@@ -10,6 +10,7 @@
  * leaves old posts on the wrong day. This fixes the data to match.
  */
 import { createClient } from 'redis';
+import { readFile } from 'node:fs/promises';
 
 const args = process.argv.slice(2);
 const apply = args.includes('--apply');
@@ -20,12 +21,42 @@ if (!Number.isInteger(a) || !Number.isInteger(b)) {
   console.error('Usage: node scripts/renumber.mjs --swap <dayA> <dayB> [--apply]');
   process.exit(1);
 }
-if (!process.env.REDIS_URL) {
-  console.error('Set REDIS_URL (Vercel → Settings → Environment Variables → REDIS_URL).');
+/** Takes --url, then REDIS_URL, then a REDIS_URL line in .env. */
+async function connectionUrl() {
+  const flagAt = args.indexOf('--url');
+  if (flagAt >= 0 && args[flagAt + 1]) return args[flagAt + 1];
+  if (process.env.REDIS_URL) return process.env.REDIS_URL;
+  try {
+    const env = await readFile('.env', 'utf8');
+    const line = env.split('\n').find((l) => l.startsWith('REDIS_URL='));
+    if (line) return line.slice('REDIS_URL='.length).trim().replace(/^["']|["']$/g, '');
+  } catch {
+    /* no .env, which is fine */
+  }
+  return '';
+}
+
+const url = (await connectionUrl()).trim();
+if (!url || !/^rediss?:\/\/.+/.test(url)) {
+  console.error(`
+Need the real Redis connection string, not a placeholder.
+
+Get it from Vercel → your project → Settings → Environment Variables →
+REDIS_URL → the ⋯ menu → Copy Value. It looks like:
+
+  redis://default:SOMEPASSWORD@some-host.redis.io:13010
+
+Then run one of:
+
+  npm run renumber -- --swap 2 3 --url 'redis://…'
+  REDIS_URL='redis://…' npm run renumber -- --swap 2 3
+
+Quote it: the password can contain characters your shell would otherwise eat.
+${url ? `\nWhat was passed: ${url.slice(0, 24)}…\n` : ''}`);
   process.exit(1);
 }
 
-const client = createClient({ url: process.env.REDIS_URL, socket: { connectTimeout: 8000 } });
+const client = createClient({ url, socket: { connectTimeout: 8000 } });
 client.on('error', (error) => console.error('[redis]', error?.message ?? error));
 await client.connect();
 
