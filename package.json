@@ -12,7 +12,8 @@
     "demo": "node build.mjs && node scripts/demo.mjs",
     "test:blob": "node scripts/test-blob.mjs",
     "message": "node scripts/message.mjs",
-    "vapid": "node scripts/gen-vapid.mjs"
+    "vapid": "node scripts/gen-vapid.mjs",
+    "renumber": "node scripts/renumber.mjs"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.0",

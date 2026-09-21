@@ -46,6 +46,15 @@ export function startFakeRedis(port = 6399) {
         }
         if (cmd === 'CLIENT' || cmd === 'INFO') { socket.write(enc.simple('OK')); continue; }
         if (cmd === 'PING') { socket.write(enc.simple('PONG')); continue; }
+        if (cmd === 'QUIT') { socket.write(enc.simple('OK')); socket.end(); continue; }
+        if (cmd === 'HDEL') {
+          const h = hashes.get(args[1]) ?? {};
+          const had = args[2] in h;
+          delete h[args[2]];
+          hashes.set(args[1], h);
+          socket.write(enc.int(had ? 1 : 0));
+          continue;
+        }
         if (cmd === 'HSET') {
           const h = hashes.get(args[1]) ?? {};
           h[args[2]] = args[3];
