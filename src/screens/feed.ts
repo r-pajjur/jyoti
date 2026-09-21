@@ -34,8 +34,9 @@ async function reminderInvite(): Promise<string> {
   if (status === 'unsupported' || status === 'denied') return '';
   if (status === 'granted' && (await isSubscribed())) return '';
   return `
-    <div class="card card-quiet invite" data-invite>
-      <p class="small">Would you like a quiet nudge each morning?</p>
+    <div class="card invite" data-invite>
+      <p class="small"><strong>Would you like a quiet nudge each morning?</strong><br>
+        So you don't have to remember to open Dhara.</p>
       <div class="invite-actions">
         <a class="btn" href="#/reminders">Yes, remind me</a>
         <button class="btn btn-ghost" data-dismiss>Not now</button>
@@ -112,11 +113,11 @@ export async function feedScreen(): Promise<HTMLElement> {
         <span class="eyebrow">Day ${feed.day}</span>
         <h1>${feed.count}/${feed.groupSize} drops today</h1>
         <p class="muted">${esc(feed.prompt?.text ?? '')}</p>
+        ${invite}
         <div class="grid ${withPhotos === 0 ? 'grid-1' : ''}" data-grid>
           ${feed.posts.map(postCard).join('')}
         </div>
         <a class="btn btn-quiet" href="#/calendar">See the whole river</a>
-        ${invite}
       </div>
     `);
 
