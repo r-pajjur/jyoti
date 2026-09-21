@@ -10,10 +10,10 @@ export interface Prompt {
 export const PROMPTS: Prompt[] = [
   { day: 1, type: 'reflection', title: 'What came home with you',
     text: "You're home. What came back inside you that you didn't pack — a feeling, a question, a small resolve?" },
-  { day: 2, type: 'photo', title: 'Something you tend',
-    text: "Something growing near you. Let it stand for whatever you're quietly tending in yourself, and photograph that." },
-  { day: 3, type: 'photo', title: 'Where you begin',
+  { day: 2, type: 'photo', title: 'Where you begin',
     text: 'Your altar, your corner, the place you sit. Photograph it — and notice what quietens in you when you settle there.' },
+  { day: 3, type: 'photo', title: 'Something you tend',
+    text: "Something growing near you. Let it stand for whatever you're quietly tending in yourself, and photograph that." },
   { day: 4, type: 'reflection', title: 'A line that stayed',
     text: 'One line from a teacher that has stayed with you. Write it as you remember it, and why you think this is the one that stayed.' },
   { day: 5, type: 'photo', title: 'The sky, and you',
