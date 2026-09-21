@@ -16,7 +16,12 @@ const options = {
   define: {
     __BUILD_ID__: JSON.stringify(BUILD_ID),
     // Safe to expose: the VAPID *public* key is meant to reach the browser.
-    __VAPID_PUBLIC_KEY__: JSON.stringify(process.env.PUBLIC_VAPID_PUBLIC_KEY || ''),
+    // PUBLIC_ is a reserved client prefix on Vercel and cannot be marked
+    // secret, so the plain VAPID_PUBLIC_KEY is accepted too and one variable
+    // does for both sides.
+    __VAPID_PUBLIC_KEY__: JSON.stringify(
+      process.env.PUBLIC_VAPID_PUBLIC_KEY || process.env.VAPID_PUBLIC_KEY || '',
+    ),
   },
 };
 
