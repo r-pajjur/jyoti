@@ -18,7 +18,7 @@ export async function remindersScreen(): Promise<HTMLElement> {
     unsupported:
       'This phone or browser cannot receive reminders. Everything else works — just open Dhara each morning.',
     denied:
-      'Reminders are blocked for Dhara. Open iPhone Settings → Notifications → Dhara, allow them, then return here.',
+      'Reminders were turned down earlier, and iPhone will not ask twice. If Dhara appears in Settings → Notifications, allow them there. If it is not listed at all, the quickest fix is below.',
     granted: 'Reminders are on. One quiet notification each morning, nothing else.',
     ready:
       'One quiet notification each morning with the day\'s invitation. No badges chasing you, no streaks to lose.',
@@ -38,6 +38,20 @@ export async function remindersScreen(): Promise<HTMLElement> {
           already
             ? '<p class="note note-good">Reminders are on.</p><button class="btn btn-quiet" data-off>Turn reminders off</button>'
             : `<button class="btn" data-on ${blocked ? 'disabled' : ''}>Turn on morning reminders</button>`
+        }
+        ${
+          status === 'denied'
+            ? `<div class="note" style="margin-top:14px">
+                 <strong>To reset it:</strong>
+                 <ol class="steps steps-tight">
+                   <li>Press and hold the Dhara icon on your home screen, then <strong>Remove App → Delete</strong>.</li>
+                   <li>Open <strong>Safari</strong> and go to dhara-cmn.vercel.app</li>
+                   <li>Share → <strong>Add to Home Screen</strong> → Add</li>
+                   <li>Open Dhara from the icon and enter <strong>the same name as before</strong>, so your drops stay yours.</li>
+                 </ol>
+                 Nothing you have posted is lost — your drops live on the river, not on your phone.
+               </div>`
+            : ''
         }
         <button class="btn btn-quiet" data-back>Back to today</button>
         <p class="small muted center" data-result></p>

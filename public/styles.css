@@ -357,4 +357,8 @@ textarea { min-height: 140px; line-height: 1.5; resize: vertical; }
   border-radius: 999px; cursor: pointer;
 }
 
+.steps-tight { margin-top: 10px; }
+.steps-tight li { padding: 0 0 12px 38px; font-size: 15.5px; }
+.steps-tight li::before { width: 26px; height: 26px; font-size: 14px; }
+
 .diag-stamp { font-size: 12px; opacity: .55; margin-top: 18px; }
