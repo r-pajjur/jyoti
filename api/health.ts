@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { currentDay, GROUP_SIZE, isConfigured, ritualConfig, TOTAL_DAYS } from './_lib/day.js';
 import { list } from '@vercel/blob';
-import { allPosts, pingStore, storageVarNames } from './_lib/store.js';
+import { allPosts, countSubscribers, pingStore, storageVarNames } from './_lib/store.js';
 import { requireMethod } from './_lib/http.js';
 
 /**
@@ -34,8 +34,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Effective values — what the app actually uses — not the raw variables. A
   // variable present but empty reads as unset, which is otherwise invisible.
   const config = ritualConfig();
+  // A public key is safe to show, and a fingerprint is enough to confirm the
+  // browser bundle and the server were built from the same keypair — a
+  // mismatch makes every push fail with no visible cause.
+  const vapidPublic = (process.env.PUBLIC_VAPID_PUBLIC_KEY || process.env.VAPID_PUBLIC_KEY || '').trim();
   const env = {
     redis: !!(process.env.REDIS_URL || process.env.KV_URL),
+    vapidPublicKey: vapidPublic ? `${vapidPublic.slice(0, 12)}…${vapidPublic.slice(-6)}` : null,
+    vapidPrivateKeySet: !!(process.env.VAPID_PRIVATE_KEY || '').trim(),
+    vapidSubject: process.env.VAPID_SUBJECT ?? null,
     startDate: config.startDate,
     startDateVar: process.env.DHARA_START_DATE ? 'DHARA_START_DATE'
       : process.env.JYOTI_START_DATE ? 'JYOTI_START_DATE' : null,
@@ -59,6 +66,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     blob = { ok: false, error: error instanceof Error ? error.message : 'unknown' };
   }
 
+  let subscribers = 0;
+  try {
+    subscribers = await deadline(countSubscribers(), 6000);
+  } catch {
+    /* reported through store.ok below */
+  }
+
   let store: { ok: boolean; ping?: string; posts?: number; error?: string };
   try {
     const ping = await deadline(pingStore(), 6000);
@@ -68,5 +82,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const ok = env.startDateConfigured && store.ok && blob.ok;
-  res.status(ok ? 200 : 503).json({ ok, build, day: currentDay(), env, seen, store, blob });
+  res.status(ok ? 200 : 503).json({ ok, build, day: currentDay(), env, seen, store, blob, subscribers });
 }
