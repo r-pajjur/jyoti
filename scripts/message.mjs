@@ -5,6 +5,7 @@
  *   npm run message              today's prompt
  *   npm run message -- --day 7   a specific day, to write ahead
  *   npm run message -- --install the join-and-install message
+ *   npm run message -- --reminders how to switch the morning nudge on
  *   npm run message -- --all     every day, to review the month at once
  *
  * Reads the same prompts and start date the app does, so the day number here
@@ -80,10 +81,28 @@ const INSTALL = [
   'That is all. I will send the day\'s invitation here each morning. 🙏',
 ].join('\n');
 
+const REMINDERS = [
+  '💧 *Dhara — a small thing to set up*',
+  '',
+  'Dhara can now send you a quiet nudge each morning, so you do not have to remember to open it. It takes about fifteen seconds.',
+  '',
+  '1. *Close Dhara completely* first — swipe up from the bottom and flick it away. This lets it pick up the new version.',
+  '2. Open *Dhara* again from your home-screen icon',
+  '3. On the first screen, tap *Yes, remind me*',
+  '4. Tap *Turn on morning reminders*',
+  '5. When iPhone asks, tap *Allow* 🙏',
+  '',
+  'That last tap matters — if you tap "Don\'t Allow", iPhone will not ask again and it takes a few more steps to undo. If that happens, the app will show you what to do.',
+  '',
+  'You can still use Dhara exactly as before without this. It only saves you remembering.',
+].join('\n');
+
 const line = '─'.repeat(52);
 
 if (flag('install')) {
   console.log(`\n${line}\n${INSTALL}\n${line}\n`);
+} else if (flag('reminders')) {
+  console.log(`\n${line}\n${REMINDERS}\n${line}\n`);
 } else if (flag('all')) {
   for (const prompt of PROMPTS) {
     console.log(`\n${line}\n${dailyMessage(prompt.day)}\n`);
