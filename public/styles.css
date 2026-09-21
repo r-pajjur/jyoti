@@ -356,3 +356,5 @@ textarea { min-height: 140px; line-height: 1.5; resize: vertical; }
   background: rgba(242, 248, 251, .92); border: 1px solid var(--hairline);
   border-radius: 999px; cursor: pointer;
 }
+
+.diag-stamp { font-size: 12px; opacity: .55; margin-top: 18px; }

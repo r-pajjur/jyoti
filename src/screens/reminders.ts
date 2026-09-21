@@ -42,6 +42,8 @@ export async function remindersScreen(): Promise<HTMLElement> {
         <button class="btn btn-quiet" data-back>Back to today</button>
         <p class="small muted center" data-result></p>
       </div>
+      <p class="small muted center diag-stamp">build ${__BUILD_ID__}${__VAPID_PUBLIC_KEY__ ? '' : ' · no key'}</p>
+      </div>
     </div>
   `);
 
