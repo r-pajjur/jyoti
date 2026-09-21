@@ -7,3 +7,4 @@ public/app.js.map
 public/sw.js
 .dhara-wire-*
 .esmcheck
+.vapid.txt
